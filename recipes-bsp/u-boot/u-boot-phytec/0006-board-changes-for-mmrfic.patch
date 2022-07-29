@@ -1,0 +1,1998 @@
+diff --git a/./board/mmrfic/am572x_bel_mmrfic/Kconfig b/./board/mmrfic/am572x_bel_mmrfic/Kconfig
+new file mode 100644
+index 0000000..4283788
+--- /dev/null
++++ b/./board/mmrfic/am572x_bel_mmrfic/Kconfig
+@@ -0,0 +1,36 @@
++if TARGET_AM572X_BEL_MMRFIC
++
++config SYS_BOARD
++	default "am572x_bel_mmrfic"
++
++config SYS_VENDOR
++	default "mmrfic"
++
++config SYS_CONFIG_NAME
++	default "am572x_bel_mmrfic"
++
++choice
++	prompt "Select DDR3L Total Memory Size"
++	default PCM_057_256M16_x2_DDR
++	help
++	  The phyCORE-AM57x SOM (PCM-057) can be populated with different DDR3
++	  chips resulting in various configurations and total available memory.
++
++      	config PCM_057_128M16_x2_DDR
++		bool "512MiB (2x 128M16)"
++	config PCM_057_256M16_x2_DDR
++		bool "1GiB (2x 256M16)"
++	config PCM_057_256M16_x4_DDR
++		bool "2GiB (4x 256M16)"
++	config PCM_057_512M16_x2_DDR
++		bool "2GiB (2x 512M16)"
++	config PCM_057_512M16_x2_ECC_DDR
++		bool "2GiB (2x 512M16) with ECC"
++	config PCM_057_512M16_x4_DDR
++		bool "4GiB (4x 512M16)"
++endchoice
++
++source "board/phytec/common/Kconfig"
++source "board/ti/common/Kconfig"
++
++endif
+diff --git a/./board/mmrfic/am572x_bel_mmrfic/Makefile b/./board/mmrfic/am572x_bel_mmrfic/Makefile
+new file mode 100644
+index 0000000..5cd6873
+--- /dev/null
++++ b/./board/mmrfic/am572x_bel_mmrfic/Makefile
+@@ -0,0 +1,8 @@
++#
++# (C) Copyright 2014
++# Texas Instruments, <www.ti.com>
++#
++# SPDX-License-Identifier:	GPL-2.0+
++#
++
++obj-y	:= board.o
+diff --git a/./board/mmrfic/am572x_bel_mmrfic/am572x-bel-mmrfic.its b/./board/mmrfic/am572x_bel_mmrfic/am572x-bel-mmrfic.its
+new file mode 100644
+index 0000000..64cb11b
+--- /dev/null
++++ b/./board/mmrfic/am572x_bel_mmrfic/am572x-bel-mmrfic.its
+@@ -0,0 +1,36 @@
++/dts-v1/;
++
++/ {
++	description = "MMRFIC, AM572x-BEL-MMRFIC Baord";
++	#address-cells = <1>;
++
++	images {
++		uboot {
++			description = "U-Boot for AM572X-BEL-MMRFIC";
++			data = /incbin/("u-boot-nodtb.bin");
++			os = "u-boot";
++			arch = "arm";
++			compression = "none";
++			load = <0x80800000>;
++		};
++
++		fdt-2 {
++			description = "MMRFIC AM572X-BEL-MMRFIC";
++			data = /incbin/("./arch/arm/dts/am572x-bel-mmrfic.dtb");
++			type = "flat_dt";
++			arch = "arm";
++			compression = "none";
++		};
++	};
++
++	configurations {
++		default = "conf-1";
++
++		conf-1 {
++			description = "am572x-bel-mmrfic";
++			loadables = "uboot";
++			fdt = "fdt-2";
++		};
++	};
++};
++
+diff --git a/./board/mmrfic/am572x_bel_mmrfic/board.c b/./board/mmrfic/am572x_bel_mmrfic/board.c
+new file mode 100644
+index 0000000..5181de5
+--- /dev/null
++++ b/./board/mmrfic/am572x_bel_mmrfic/board.c
+@@ -0,0 +1,836 @@
++// SPDX-License-Identifier: GPL-2.0+
++/*
++ * Copyright (C) 2015 PHYTEC America, LLC
++ * Author: Russell Robinson <rrobinson@phytec.com>
++ *
++ * Based on board/ti/beagle_x15/board.c
++ */
++
++#include <common.h>
++#include <palmas.h>
++#include <sata.h>
++#include <usb.h>
++#include <asm/omap_common.h>
++#include <asm/omap_sec_common.h>
++#include <asm/emif.h>
++#include <asm/gpio.h>
++#include <asm/arch/gpio.h>
++#include <asm/arch/clock.h>
++#include <asm/arch/dra7xx_iodelay.h>
++#include <asm/arch/sys_proto.h>
++#include <asm/arch/mmc_host_def.h>
++#include <asm/arch/sata.h>
++#include <asm/arch/omap.h>
++#include <asm/arch-omap5/spl.h>
++#include <environment.h>
++#include <usb.h>
++#include <linux/usb/gadget.h>
++#include <dwc3-uboot.h>
++#include <dwc3-omap-uboot.h>
++#include <ti-usb-phy-uboot.h>
++#include <mmc.h>
++
++#include "emif_config.h"
++#include "mux_data.h"
++#include "../common/phytec_eeprom.h"
++
++#ifdef CONFIG_DRIVER_TI_CPSW
++#include <cpsw.h>
++#endif
++
++#ifdef CONFIG_PHYTEC_NAND
++#include <nand.h>
++#endif
++
++DECLARE_GLOBAL_DATA_PTR;
++
++#define TPS65903X_PRIMARY_SECONDARY_PAD2 0xFB
++#define TPS65903X_PAD2_POWERHOLD_MASK    0x20
++
++#define GPIO_DDR_VTT_EN 104 /* vin2a_d7.gpio4_8 */
++
++const struct omap_sysinfo sysinfo = {
++	"Board: AM572X-BEL-MMRFIC\n"
++};
++
++static void ddr3_err(const char *func)
++{
++	printf("%s: DDR3 option not supported!\n"
++		"Please flash your SOM's EEPROM with valid information.\n",
++		func);
++}
++
++static void eeprom_err(const char *func)
++{
++	printf("%s: I2C read failed or EEPROM information is invalid!\n"
++		"Please flash your SOM's EEPROM with valid information.\n",
++		func);
++}
++
++static bool is_am574x(struct phytec_common_eeprom *ep)
++{
++	/* SOC board population option at ep->kit_opt[4] for am57xx */
++	return (ep->kit_opt[4] == '2' || ep->kit_opt[4] == '4' ||
++		ep->kit_opt[4] == '5');
++}
++
++void emif_get_dmm_regs(const struct dmm_lisa_map_regs **dmm_lisa_regs)
++{
++	struct phytec_common_eeprom *ep;
++	unsigned char ecc_opt;
++	unsigned char ddr3_opt;
++
++	ep = PHYTEC_EEPROM_DATA;
++
++	/* ECC board population option at ep->kit_opt[1] for am57xx */
++	ecc_opt = ep->kit_opt[1];
++
++	/* ddr3 board population option at ep->kit_opt[0] for am57xx */
++	ddr3_opt = ep->kit_opt[0];
++
++	switch (ecc_opt) {
++	case '0':
++		switch (ddr3_opt) {
++		case '0':
++			*dmm_lisa_regs = &am57xx_512Mx1_lisa_regs;
++			break;
++		case '1':
++			*dmm_lisa_regs = &am57xx_1Gx1_lisa_regs;
++			break;
++		case '3':
++			*dmm_lisa_regs = &am57xx_2Gx1_lisa_regs;
++			break;
++		case '4':
++		case '5':
++			*dmm_lisa_regs = &am57xx_1Gx2_lisa_regs;
++			break;
++		default:
++			ddr3_err(__func__);
++		}
++		break;
++	case '1':
++		switch (ddr3_opt) {
++		case '1':
++			*dmm_lisa_regs = &am574x_1Gx1_ECC_lisa_regs;
++			break;
++		case '4':
++			if (!is_am574x(ep))
++				*dmm_lisa_regs = &am57xx_1Gx2_lisa_regs;
++			else
++				ddr3_err(__func__);
++			break;
++		default:
++			ddr3_err(__func__);
++		}
++		break;
++	case '2':
++		switch (ddr3_opt) {
++		case '3':
++			*dmm_lisa_regs = &am574x_2Gx1_ECC_lisa_regs;
++			break;
++		default:
++			ddr3_err(__func__);
++		}
++		break;
++	default:
++#if defined(CONFIG_PCM_057_128M16_x2_DDR)
++		*dmm_lisa_regs = &am57xx_512Mx1_lisa_regs;
++#elif defined(CONFIG_PCM_057_256M16_x2_DDR)
++		*dmm_lisa_regs = &am57xx_1Gx1_lisa_regs;
++#elif defined(CONFIG_PCM_057_512M16_x2_DDR)
++		*dmm_lisa_regs = &am57xx_2Gx1_lisa_regs;
++#elif (defined(CONFIG_PCM_057_256M16_x4_DDR) || \
++	defined(CONFIG_PCM_057_512M16_x4_DDR))
++		*dmm_lisa_regs = &am57xx_1Gx2_lisa_regs;
++#elif defined(CONFIG_PCM_057_512M16_x2_ECC_DDR)
++		*dmm_lisa_regs = &am574x_2Gx1_ECC_lisa_regs;
++#endif
++	}
++}
++
++void emif_get_reg_dump(u32 emif_nr, const struct emif_regs **regs)
++{
++	struct phytec_common_eeprom *ep;
++	unsigned char ecc_opt;
++	unsigned char ddr3_opt;
++
++	ep = PHYTEC_EEPROM_DATA;
++
++	/* ECC board population option at ep->kit_opt[1] for am57xx */
++	ecc_opt = ep->kit_opt[1];
++
++	/* ddr3 board population option at ep->kit_opt[0] for am57xx */
++	ddr3_opt = ep->kit_opt[0];
++
++	switch (ecc_opt) {
++	case '0':
++		switch (ddr3_opt) {
++		case '0':
++			*regs = &am57xx_emif_532mhz_128M16_regs;
++			break;
++		case '1':
++		case '4':
++			*regs = &am57xx_emif_532mhz_256M16_regs;
++			break;
++		case '3':
++		case '5':
++			*regs = &am57xx_emif_532mhz_512M16_regs;
++			break;
++		default:
++			ddr3_err(__func__);
++		}
++		break;
++	case '1':
++		switch (ddr3_opt) {
++		case '1':
++			*regs = &am574x_emif_532mhz_256M16_ECC_regs;
++			break;
++		case '4':
++			if (!is_am574x(ep))
++				*regs = &am57xx_emif_532mhz_256M16_regs;
++			else
++				ddr3_err(__func__);
++			break;
++		default:
++			ddr3_err(__func__);
++		}
++		break;
++	case '2':
++		switch (ddr3_opt) {
++		case '3':
++			*regs = &am57xx_emif_532mhz_512M16_ECC_regs;
++			break;
++		default:
++			ddr3_err(__func__);
++		}
++		break;
++	default:
++#if defined(CONFIG_PCM_057_128M16_x2_DDR)
++		*regs = &am57xx_emif_532mhz_128M16_regs;
++#elif (defined(CONFIG_PCM_057_256M16_x2_DDR) || \
++	defined(CONFIG_PCM_057_256M16_x4_DDR))
++		*regs = &am57xx_emif_532mhz_256M16_regs;
++#elif (defined(CONFIG_PCM_057_512M16_x2_DDR) || \
++	defined(CONFIG_PCM_057_512M16_x4_DDR))
++		*regs = &am57xx_emif_532mhz_512M16_regs;
++#elif defined(CONFIG_PCM_057_512M16_x2_ECC_DDR)
++		*regs = &am57xx_emif_532mhz_512M16_ECC_regs;
++#endif
++	}
++}
++
++void emif_get_ext_phy_ctrl_const_regs(u32 emif_nr, const u32 **regs, u32 *size)
++{
++	*regs = am57xx_emif_ext_phy_ctrl_const_regs;
++	*size = ARRAY_SIZE(am57xx_emif_ext_phy_ctrl_const_regs);
++}
++
++struct vcores_data am57xx_phycore_volts = {
++	.mpu.value[OPP_NOM]	= VDD_MPU_DRA7_NOM,
++	.mpu.efuse.reg[OPP_NOM]	= STD_FUSE_OPP_VMIN_MPU_NOM,
++	.mpu.efuse.reg_bits	= DRA752_EFUSE_REGBITS,
++	.mpu.addr		= TPS659038_REG_ADDR_SMPS12,
++	.mpu.pmic		= &tps659038,
++	.mpu.abb_tx_done_mask	= OMAP_ABB_MPU_TXDONE_MASK,
++
++	.eve.value[OPP_NOM]	= VDD_EVE_DRA7_NOM,
++	.eve.value[OPP_OD]	= VDD_EVE_DRA7_OD,
++	.eve.value[OPP_HIGH]	= VDD_EVE_DRA7_HIGH,
++	.eve.efuse.reg[OPP_NOM]	= STD_FUSE_OPP_VMIN_DSPEVE_NOM,
++	.eve.efuse.reg[OPP_OD]	= STD_FUSE_OPP_VMIN_DSPEVE_OD,
++	.eve.efuse.reg[OPP_HIGH]	= STD_FUSE_OPP_VMIN_DSPEVE_HIGH,
++	.eve.efuse.reg_bits	= DRA752_EFUSE_REGBITS,
++	.eve.addr		= TPS659038_REG_ADDR_SMPS45,
++	.eve.pmic		= &tps659038,
++	.eve.abb_tx_done_mask	= OMAP_ABB_EVE_TXDONE_MASK,
++
++	.gpu.value[OPP_NOM]	= VDD_GPU_DRA7_NOM,
++	.gpu.value[OPP_OD]	= VDD_GPU_DRA7_OD,
++	.gpu.value[OPP_HIGH]	= VDD_GPU_DRA7_HIGH,
++	.gpu.efuse.reg[OPP_NOM]	= STD_FUSE_OPP_VMIN_GPU_NOM,
++	.gpu.efuse.reg[OPP_OD]	= STD_FUSE_OPP_VMIN_GPU_OD,
++	.gpu.efuse.reg[OPP_HIGH]	= STD_FUSE_OPP_VMIN_GPU_HIGH,
++	.gpu.efuse.reg_bits	= DRA752_EFUSE_REGBITS,
++	.gpu.addr		= TPS659038_REG_ADDR_SMPS45,
++	.gpu.pmic		= &tps659038,
++	.gpu.abb_tx_done_mask	= OMAP_ABB_GPU_TXDONE_MASK,
++
++	.core.value[OPP_NOM]	= VDD_CORE_DRA7_NOM,
++	.core.efuse.reg[OPP_NOM]	= STD_FUSE_OPP_VMIN_CORE_NOM,
++	.core.efuse.reg_bits	= DRA752_EFUSE_REGBITS,
++	.core.addr		= TPS659038_REG_ADDR_SMPS6,
++	.core.pmic		= &tps659038,
++
++	.iva.value[OPP_NOM]	= VDD_IVA_DRA7_NOM,
++	.iva.value[OPP_OD]	= VDD_IVA_DRA7_OD,
++	.iva.value[OPP_HIGH]	= VDD_IVA_DRA7_HIGH,
++	.iva.efuse.reg[OPP_NOM]	= STD_FUSE_OPP_VMIN_IVA_NOM,
++	.iva.efuse.reg[OPP_OD]	= STD_FUSE_OPP_VMIN_IVA_OD,
++	.iva.efuse.reg[OPP_HIGH]	= STD_FUSE_OPP_VMIN_IVA_HIGH,
++	.iva.efuse.reg_bits	= DRA752_EFUSE_REGBITS,
++	.iva.addr		= TPS659038_REG_ADDR_SMPS45,
++	.iva.pmic		= &tps659038,
++	.iva.abb_tx_done_mask	= OMAP_ABB_IVA_TXDONE_MASK,
++};
++
++int get_voltrail_opp(int rail_offset)
++{
++	int opp;
++
++	switch (rail_offset) {
++	case VOLT_MPU:
++		opp = DRA7_MPU_OPP;
++		break;
++	case VOLT_CORE:
++		opp = DRA7_CORE_OPP;
++		break;
++	case VOLT_GPU:
++		opp = DRA7_GPU_OPP;
++		break;
++	case VOLT_EVE:
++		opp = DRA7_DSPEVE_OPP;
++		break;
++	case VOLT_IVA:
++		opp = DRA7_IVA_OPP;
++		break;
++	default:
++		opp = OPP_NOM;
++	}
++
++	return opp;
++}
++
++void vcores_init(void)
++{
++	*omap_vcores = &am57xx_phycore_volts;
++}
++
++void hw_data_init(void)
++{
++	*prcm = &dra7xx_prcm;
++	*dplls_data = &dra7xx_dplls;
++	*ctrl = &dra7xx_ctrl;
++}
++
++int board_init(void)
++{
++	gpmc_init();
++	gd->bd->bi_boot_params = (CONFIG_SYS_SDRAM_BASE + 0x100);
++
++	return 0;
++}
++
++int dram_init_banksize(void)
++{
++	struct phytec_common_eeprom *ep;
++	unsigned char ddr3_opt;
++	u64 ram_size;
++
++	ep = PHYTEC_EEPROM_DATA;
++
++	/* ddr3 board population option at ep->kit_opt[0] for am57xx */
++	ddr3_opt = ep->kit_opt[0];
++
++	switch (ddr3_opt) {
++	case '0':
++		ram_size = 0x20000000;
++		break;
++	case '1':
++		ram_size = 0x40000000;
++		break;
++	case '3':
++	case '4':
++		ram_size = 0x80000000;
++		break;
++	case '5':
++		ram_size = 0x100000000;
++		break;
++	default:
++#if defined(CONFIG_PCM_057_128M16_x2_DDR)
++		ram_size = 0x20000000;
++#elif defined(CONFIG_PCM_057_256M16_x2_DDR)
++		ram_size = 0x40000000;
++#elif (defined(CONFIG_PCM_057_256M16_x4_DDR) || \
++	defined(CONFIG_PCM_057_512M16_x2_DDR) || \
++	defined(CONFIG_PCM_057_512M16_x2_ECC_DDR))
++		ram_size = 0x80000000;
++#elif defined(CONFIG_PCM_057_512M16_x4_DDR)
++		ram_size = 0x100000000;
++#elif defined(CONFIG_PCM_057_512M16_x2_ECC_DDR)
++#endif
++	}
++
++	gd->bd->bi_dram[0].start = CONFIG_SYS_SDRAM_BASE;
++	gd->bd->bi_dram[0].size = get_effective_memsize();
++	if (ram_size > CONFIG_MAX_MEM_MAPPED) {
++		gd->bd->bi_dram[1].start = 0x200000000;
++		gd->bd->bi_dram[1].size = ram_size - CONFIG_MAX_MEM_MAPPED;
++	}
++
++	return 0;
++}
++
++void do_board_detect(void)
++{
++	int rc;
++	rc = phytec_i2c_eeprom_get(CONFIG_EEPROM_BUS_ADDRESS,
++			CONFIG_EEPROM_CHIP_ADDRESS);
++	if (rc)
++		eeprom_err(__func__);
++}
++
++#ifdef CONFIG_SPL_BUILD
++static inline void eeprom_set_board_env(void) { }
++#else
++void eeprom_set_board_env(void)
++{
++	char *name = "am572x_bel_mmrfic";
++	char *soc = "am572x";
++
++	if (phytec_board_match("10203110C"))
++		name = "am5716_phycore_kit_10203110c";
++	else if (phytec_board_match("10203111I"))
++		name = "am5716_phycore_kit_10203111i";
++	else if (phytec_board_match("00001100I"))
++		name = "am5726_phycore_kit_00001100i";
++	else if (phytec_board_match("10201111I"))
++		name = "am5726_phycore_kit_10201111i";
++	else if (phytec_board_match("40201111I"))
++		name = "am5726_phycore_kit_40201111i";
++	else if (phytec_board_match("41201111I"))
++		name = "am5726_phycore_kit_41201111i";
++	else if (phytec_board_match("50201111I"))
++		name = "am5726_phycore_kit_50201111i";
++	else if (phytec_board_match("10200110I"))
++		name = "am5728_phycore_kit_10200110i";
++	else if (phytec_board_match("40200110C"))
++		name = "am5728_phycore_kit_40200110c";
++	else if (phytec_board_match("40A00111I"))
++		name = "am5728_phycore_kit_40a00111i";
++	else if (phytec_board_match("41300111I"))
++		name = "am5728_phycore_kit_41300111i";
++	else if (phytec_board_match("50500111I"))
++		name = "am5728_phycore_kit_50500111i";
++	else if (phytec_board_match("10306111I"))
++		name = "am5729_phycore_kit_10306111i";
++	else if (phytec_board_match("11305111I"))
++		name = "am5746_phycore_kit_11305111i";
++	else if (phytec_board_match("11304111I"))
++		name = "am5748_phycore_kit_11304111i";
++	else if (phytec_board_match("11302111I"))
++		name = "am5749_phycore_kit_11302111i";
++	else if (phytec_board_match("32302111I"))
++		name = "am5749_phycore_kit_32302111i";
++	else if (phytec_board_match("413451321"))
++		name = "am572x_bel_mmrfic";
++	else
++		printf("PHYTEC: unknown board name. Defaulting to %s, " \
++		       "a MINIMAL AM5716 configuration.\n", name);
++
++	/* copy the first six characters of name to soc */
++	strncpy(soc, name, 6);
++
++	env_set("board_name", name);
++	env_set("board_soc", soc);
++}
++#endif /* CONFIG_SPL_BUILD */
++
++#if CONFIG_IS_ENABLED(DM_USB) && CONFIG_IS_ENABLED(OF_CONTROL)
++static int device_okay(const char *path)
++{
++	int node;
++
++	node = fdt_path_offset(gd->fdt_blob, path);
++	if (node < 0)
++		return 0;
++
++	return fdtdec_get_is_enabled(gd->fdt_blob, node);
++}
++#endif
++
++int board_late_init(void)
++{
++	u8 val;
++
++	if (!env_get("override_board"))
++		eeprom_set_board_env();
++
++	/*
++	 * DEV_CTRL.DEV_ON = 1 please - else palmas switches off in 8 seconds
++	 * This is the POWERHOLD-in-Low behavior.
++	 */
++	palmas_i2c_write_u8(TPS65903X_CHIP_P1, 0xA0, 0x1);
++
++	/*
++	 * Default FIT boot on HS devices. Non FIT images are not allowed
++	 * on HS devices.
++	 */
++	if (get_device_type() == HS_DEVICE)
++		env_set("boot_fit", "1");
++
++	/*
++	 * Set the GPIO7 Pad to POWERHOLD. This has higher priority
++	 * over DEV_CTRL.DEV_ON bit. This can be reset in case of
++	 * PMIC Power off. So to be on the safer side set it back
++	 * to POWERHOLD mode irrespective of the current state.
++	 */
++	palmas_i2c_read_u8(TPS65903X_CHIP_P1, TPS65903X_PRIMARY_SECONDARY_PAD2,
++			   &val);
++	val = val | TPS65903X_PAD2_POWERHOLD_MASK;
++	palmas_i2c_write_u8(TPS65903X_CHIP_P1, TPS65903X_PRIMARY_SECONDARY_PAD2,
++			    val);
++
++	omap_die_id_serial();
++	omap_set_fastboot_vars();
++
++#if CONFIG_IS_ENABLED(DM_USB) && CONFIG_IS_ENABLED(OF_CONTROL)
++	if (device_okay("/ocp/omap_dwc3_1@48880000"))
++		enable_usb_clocks(0);
++	if (device_okay("/ocp/omap_dwc3_2@488c0000"))
++		enable_usb_clocks(1);
++#endif
++
++	return 0;
++}
++
++void set_muxconf_regs(void)
++{
++	do_set_mux32((*ctrl)->control_padconf_core_base,
++			early_padconf, ARRAY_SIZE(early_padconf));
++}
++
++#ifdef CONFIG_IODELAY_RECALIBRATION
++void recalibrate_iodelay(void)
++{
++	const struct iodelay_cfg_entry *iod;
++	int iod_sz;
++	int ret;
++
++	/* Setup I/O isolation */
++	ret = __recalibrate_iodelay_start();
++	if (ret)
++		goto err;
++
++	/* Do the muxing here */
++	do_set_mux32((*ctrl)->control_padconf_core_base,
++			core_padconf_array_essential,
++			ARRAY_SIZE(core_padconf_array_essential));
++
++	if (omap_revision() == DRA752_ES1_1) {
++		iod = iodelay_cfg_array_sr1_1;
++		iod_sz = ARRAY_SIZE(iodelay_cfg_array_sr1_1);
++	} else {
++		iod = iodelay_cfg_array_sr2_0;
++		iod_sz = ARRAY_SIZE(iodelay_cfg_array_sr2_0);
++	}
++
++	/* Setup IOdelay configuration */
++	ret = do_set_iodelay((*ctrl)->iodelay_config_base, iod, iod_sz);
++
++err:
++	/* Closeup.. remove isolation */
++	__recalibrate_iodelay_end(ret);
++}
++#endif
++
++#if defined(CONFIG_MMC)
++int board_mmc_init(bd_t *bis)
++{
++	/* init SD */
++	omap_mmc_init(0, 0, 0, -1, -1);
++#if !defined(CONFIG_PHYTEC_NAND)
++	/* init eMMC */
++	omap_mmc_init(1, 0, 0, -1, -1);
++#endif
++
++	return 0;
++}
++
++static const struct mmc_platform_fixups am57x_es1_1_mmc1_fixups = {
++	.hw_rev = "rev11",
++	.unsupported_caps = MMC_CAP(MMC_HS_200) |
++			    MMC_CAP(UHS_SDR104),
++	.max_freq = 96000000,
++};
++
++static const struct mmc_platform_fixups am57x_es1_1_mmc23_fixups = {
++	.hw_rev = "rev11",
++	.unsupported_caps = MMC_CAP(MMC_HS_200) |
++			    MMC_CAP(UHS_SDR104) |
++			    MMC_CAP(UHS_SDR50),
++	.max_freq = 48000000,
++};
++
++const struct mmc_platform_fixups *platform_fixups_mmc(uint32_t addr)
++{
++	switch (omap_revision()) {
++	case DRA752_ES1_0:
++	case DRA752_ES1_1:
++		if (addr == OMAP_HSMMC1_BASE)
++			return &am57x_es1_1_mmc1_fixups;
++		else
++			return &am57x_es1_1_mmc23_fixups;
++	default:
++		return NULL;
++	}
++}
++#endif
++
++#if defined(CONFIG_SPL_BUILD) && defined(CONFIG_SPL_OS_BOOT)
++int spl_start_uboot(void)
++{
++	/* break into full u-boot on 'c' */
++	if (serial_tstc() && serial_getc() == 'c')
++		return 1;
++
++#ifdef CONFIG_SPL_ENV_SUPPORT
++#if defined(CONFIG_PHYTEC_NAND) && defined(CONFIG_ENV_IS_IN_NAND)
++	nand_init();
++#endif
++
++	env_init();
++	env_load();
++
++	if (env_get_yesno("boot_os") != 1)
++		return 1;
++#endif
++
++	return 0;
++}
++#endif
++
++#ifdef CONFIG_DRIVER_TI_CPSW
++
++/* Delay value to add to calibrated value */
++#define RGMII0_TXCTL_DLY_VAL		((0x3 << 5) + 0x8)
++#define RGMII0_TXD0_DLY_VAL		((0x3 << 5) + 0x8)
++#define RGMII0_TXD1_DLY_VAL		((0x3 << 5) + 0x2)
++#define RGMII0_TXD2_DLY_VAL		((0x4 << 5) + 0x0)
++#define RGMII0_TXD3_DLY_VAL		((0x4 << 5) + 0x0)
++#define VIN2A_D13_DLY_VAL		((0x3 << 5) + 0x8)
++#define VIN2A_D17_DLY_VAL		((0x3 << 5) + 0x8)
++#define VIN2A_D16_DLY_VAL		((0x3 << 5) + 0x2)
++#define VIN2A_D15_DLY_VAL		((0x4 << 5) + 0x0)
++#define VIN2A_D14_DLY_VAL		((0x4 << 5) + 0x0)
++
++static void cpsw_control(int enabled)
++{
++	/* VTP can be added here */
++}
++
++static struct cpsw_slave_data cpsw_slaves[] = {
++	{
++		.slave_reg_ofs	= 0x208,
++		.sliver_reg_ofs	= 0xd80,
++		.phy_addr	= 1,
++	},
++	{
++		.slave_reg_ofs	= 0x308,
++		.sliver_reg_ofs	= 0xdc0,
++		.phy_addr	= 2,
++	},
++};
++
++static struct cpsw_platform_data cpsw_data = {
++	.mdio_base		= CPSW_MDIO_BASE,
++	.cpsw_base		= CPSW_BASE,
++	.mdio_div		= 0xff,
++	.channels		= 8,
++	.cpdma_reg_ofs		= 0x800,
++	.slaves			= 2,
++	.slave_data		= cpsw_slaves,
++	.ale_reg_ofs		= 0xd00,
++	.ale_entries		= 1024,
++	.host_port_reg_ofs	= 0x108,
++	.hw_stats_reg_ofs	= 0x900,
++	.bd_ram_ofs		= 0x2000,
++	.mac_control		= (1 << 5),
++	.control		= cpsw_control,
++	.host_port_num		= 0,
++	.version		= CPSW_CTRL_VERSION_2,
++};
++
++int board_eth_init(bd_t *bis)
++{
++	int ret;
++	uint8_t mac_addr[6];
++	uint32_t mac_hi, mac_lo;
++	uint32_t ctrl_val;
++
++	/* try reading mac address from efuse */
++	mac_lo = readl((*ctrl)->control_core_mac_id_0_lo);
++	mac_hi = readl((*ctrl)->control_core_mac_id_0_hi);
++	mac_addr[0] = (mac_hi & 0xFF0000) >> 16;
++	mac_addr[1] = (mac_hi & 0xFF00) >> 8;
++	mac_addr[2] = mac_hi & 0xFF;
++	mac_addr[3] = (mac_lo & 0xFF0000) >> 16;
++	mac_addr[4] = (mac_lo & 0xFF00) >> 8;
++	mac_addr[5] = mac_lo & 0xFF;
++
++	if (!env_get("ethaddr")) {
++		printf("<ethaddr> not set. Validating first E-fuse MAC\n");
++
++		if (is_valid_ethaddr(mac_addr))
++			eth_env_set_enetaddr("ethaddr", mac_addr);
++	}
++
++	mac_lo = readl((*ctrl)->control_core_mac_id_1_lo);
++	mac_hi = readl((*ctrl)->control_core_mac_id_1_hi);
++	mac_addr[0] = (mac_hi & 0xFF0000) >> 16;
++	mac_addr[1] = (mac_hi & 0xFF00) >> 8;
++	mac_addr[2] = mac_hi & 0xFF;
++	mac_addr[3] = (mac_lo & 0xFF0000) >> 16;
++	mac_addr[4] = (mac_lo & 0xFF00) >> 8;
++	mac_addr[5] = mac_lo & 0xFF;
++
++	if (!env_get("eth1addr")) {
++		if (is_valid_ethaddr(mac_addr))
++			eth_env_set_enetaddr("eth1addr", mac_addr);
++	}
++
++	ctrl_val = readl((*ctrl)->control_core_control_io1) & (~0x33);
++	ctrl_val |= 0x22;
++	writel(ctrl_val, (*ctrl)->control_core_control_io1);
++
++	ret = cpsw_register(&cpsw_data);
++	if (ret < 0)
++		printf("Error %d registering CPSW switch\n", ret);
++
++	return ret;
++}
++#endif
++
++#ifdef CONFIG_BOARD_EARLY_INIT_F
++/* VTT regulator enable */
++static inline void vtt_regulator_enable(void)
++{
++	if (omap_hw_init_context() == OMAP_INIT_CONTEXT_UBOOT_AFTER_SPL)
++		return;
++
++	gpio_request(GPIO_DDR_VTT_EN, "ddr_vtt_en");
++	gpio_direction_output(GPIO_DDR_VTT_EN, 1);
++}
++
++int board_early_init_f(void)
++{
++	vtt_regulator_enable();
++	return 0;
++}
++#endif
++
++#if defined(CONFIG_OF_LIBFDT) && defined(CONFIG_OF_BOARD_SETUP)
++int ft_board_setup(void *blob, bd_t *bd)
++{
++	ft_cpu_setup(blob, bd);
++
++	return 0;
++}
++#endif
++
++#ifdef CONFIG_SPL_LOAD_FIT
++int board_fit_config_name_match(const char *name)
++{
++	if (!strcmp(name, "am5716-pcm-057-10203110c")) {
++		if (phytec_board_match("10203110C"))
++			return 0;
++	} else if (!strcmp(name, "am5716-pcm-057-10203111i")) {
++		if (phytec_board_match("10203111I"))
++			return 0;
++	} else if (!strcmp(name, "am5726-pcm-057-10201111i")) {
++		if (phytec_board_match("10201111I"))
++			return 0;
++	} else if (!strcmp(name, "am5726-pcm-057-00001100i")) {
++		if (phytec_board_match("00001100I"))
++			return 0;
++	} else if (!strcmp(name, "am5726-pcm-057-40201111i")) {
++		if (phytec_board_match("40201111I"))
++			return 0;
++	} else if (!strcmp(name, "am5726-pcm-057-41201111i")) {
++		if (phytec_board_match("41201111I"))
++			return 0;
++	} else if (!strcmp(name, "am5726-pcm-057-50201111i")) {
++		if (phytec_board_match("50201111I"))
++			return 0;
++	} else if (!strcmp(name, "am5728-pcm-057-10200110i")) {
++		if (phytec_board_match("10200110I"))
++			return 0;
++	} else if (!strcmp(name, "am5728-pcm-057-40200110c")) {
++		if (phytec_board_match("40200110C"))
++			return 0;
++	} else if (!strcmp(name, "am5728-pcm-057-40a00111i")) {
++		if (phytec_board_match("40A00111I"))
++			return 0;
++	} else if (!strcmp(name, "am5728-pcm-057-41300111i")) {
++		if (phytec_board_match("41300111I"))
++			return 0;
++	} else if (!strcmp(name, "am5728-pcm-057-50500111i")) {
++		if (phytec_board_match("50500111I"))
++			return 0;
++	} else if (!strcmp(name, "am5729-pcm-057-10306111i")) {
++		if (phytec_board_match("10306111I"))
++			return 0;
++	} else if (!strcmp(name, "am5746-pcm-057-11305111i")) {
++		if (phytec_board_match("11305111I"))
++			return 0;
++	} else if (!strcmp(name, "am5748-pcm-057-11304111i")) {
++		if (phytec_board_match("11304111I"))
++			return 0;
++	} else if (!strcmp(name, "am5749-pcm-057-11302111i")) {
++		if (phytec_board_match("11302111I"))
++			return 0;
++	} else if (!strcmp(name, "am5749-pcm-057-32302111i")) {
++		if (phytec_board_match("32302111I"))
++			return 0;
++	}
++
++	return -1;
++}
++#endif
++
++#ifdef CONFIG_TI_SECURE_DEVICE
++void board_fit_image_post_process(void **p_image, size_t *p_size)
++{
++	secure_boot_verify_image(p_image, p_size);
++}
++
++void board_tee_image_process(ulong tee_image, size_t tee_size)
++{
++	secure_tee_install((u32)tee_image);
++}
++
++#if CONFIG_IS_ENABLED(FASTBOOT) && !CONFIG_IS_ENABLED(ENV_IS_NOWHERE)
++int fastboot_set_reboot_flag(void)
++{
++	printf("Setting reboot to fastboot flag ...\n");
++	env_set("dofastboot", "1");
++	env_save();
++	return 0;
++}
++#endif
++
++U_BOOT_FIT_LOADABLE_HANDLER(IH_TYPE_TEE, board_tee_image_process);
++#endif
++
++#if CONFIG_IS_ENABLED(ENV_IS_IN_FAT) && \
++	(CONFIG_IS_ENABLED(ENV_IS_IN_NAND) || CONFIG_IS_ENABLED(ENV_IS_IN_MMC))
++#include "../common/env_locations.h"
++
++enum env_location env_get_location(enum env_operation op, int prio)
++{
++	if (omap_sys_boot_device() == BOOT_DEVICE_MMC1) {
++		if (prio >= ARRAY_SIZE(priority_fat))
++			return ENVL_UNKNOWN;
++
++		gd->env_load_prio = prio;
++
++		return priority_fat[prio];
++	} else {
++		if (prio >= ARRAY_SIZE(priority_flash))
++			return ENVL_UNKNOWN;
++
++		gd->env_load_prio = prio;
++
++		return priority_flash[prio];
++	}
++}
++#endif
+diff --git a/./board/mmrfic/am572x_bel_mmrfic/emif_config.h b/./board/mmrfic/am572x_bel_mmrfic/emif_config.h
+new file mode 100644
+index 0000000..a8748d0
+--- /dev/null
++++ b/./board/mmrfic/am572x_bel_mmrfic/emif_config.h
+@@ -0,0 +1,229 @@
++/*
++ * Copyright (C) 2015 PHYTEC America, LLC
++ * Author: Russell Robinson <rrobinson@phytec.com>
++ *
++ * Based on board/ti/beagle_x15/board.c
++ *
++ * SPDX-License-Identifier:	GPL-2.0+
++ */
++
++#ifndef _EMIF_CONFIG_PCM057_H_
++#define _EMIF_CONFIG_PCM057_H_
++
++const struct dmm_lisa_map_regs am57xx_512Mx1_lisa_regs = {
++	.dmm_lisa_map_3 = 0xFF020100,
++	.dmm_lisa_map_2 = 0x80500100,
++	.is_ma_present  = 0x1
++};
++
++const struct dmm_lisa_map_regs am57xx_1Gx1_lisa_regs = {
++	.dmm_lisa_map_3 = 0xFF020100,
++	.dmm_lisa_map_2 = 0x80600100,
++	.is_ma_present  = 0x1
++};
++
++const struct dmm_lisa_map_regs am57xx_1Gx2_lisa_regs = {
++	.dmm_lisa_map_3 = 0xFF020100,
++	.dmm_lisa_map_2 = 0x80780300,
++	.is_ma_present  = 0x1
++};
++
++const struct dmm_lisa_map_regs am57xx_2Gx1_lisa_regs = {
++	.dmm_lisa_map_3 = 0xFF020100,
++	.dmm_lisa_map_2 = 0x80700100,
++	.is_ma_present  = 0x1
++};
++
++const struct dmm_lisa_map_regs am574x_1Gx1_ECC_lisa_regs = {
++	.dmm_lisa_map_3 = 0xFF020100,
++	.dmm_lisa_map_2 = 0x80600100,
++	.is_ma_present  = 0x1
++};
++
++const struct dmm_lisa_map_regs am574x_2Gx1_ECC_lisa_regs = {
++	.dmm_lisa_map_3 = 0xFF020100,
++	.dmm_lisa_map_2 = 0x80700100,
++	.is_ma_present  = 0x1
++};
++
++/* MT41K128M16JT-125 memory timings */
++const struct emif_regs am57xx_emif_532mhz_128M16_regs = {
++	.sdram_config_init	= 0x61851ab2,
++	.sdram_config		= 0x61851ab2,
++	.sdram_config2		= 0x08000000,
++	.ref_ctrl		= 0x000040f1,
++	.ref_ctrl_final		= 0x00001035,
++	.sdram_tim1		= 0xeeef2673,
++	.sdram_tim2		= 0x305c7fda,
++	.sdram_tim3		= 0x409f8558,
++	.read_idle_ctrl		= 0x00090000,
++	.zq_config		= 0x5007190b,
++	.temp_alert_config	= 0x00000000,
++	.emif_ddr_phy_ctlr_1_init = 0x0024400b,
++	.emif_ddr_phy_ctlr_1	= 0x0e24400b,
++	.emif_ddr_ext_phy_ctrl_1 = 0x10040100,
++	.emif_ddr_ext_phy_ctrl_2 = 0x00910091,
++	.emif_ddr_ext_phy_ctrl_3 = 0x00950095,
++	.emif_ddr_ext_phy_ctrl_4 = 0x009b009b,
++	.emif_ddr_ext_phy_ctrl_5 = 0x009e009e,
++	.emif_rd_wr_lvl_rmp_win	= 0x00000000,
++	.emif_rd_wr_lvl_rmp_ctl	= 0x80000000,
++	.emif_rd_wr_lvl_ctl	= 0x00000000,
++	.emif_rd_wr_exec_thresh	= 0x00000305
++};
++
++/* MT41K256M16TW-107 memory timings */
++const struct emif_regs am57xx_emif_532mhz_256M16_regs = {
++	.sdram_config_init	= 0x61851b32,
++	.sdram_config		= 0x61851b32,
++	.sdram_config2		= 0x08000000,
++	.ref_ctrl		= 0x000040f1,
++	.ref_ctrl_final		= 0x00001035,
++	.sdram_tim1		= 0xeeef265b,
++	.sdram_tim2		= 0x308f7fda,
++	.sdram_tim3		= 0x409f88a8,
++	.read_idle_ctrl		= 0x00090000,
++	.zq_config		= 0x5007190b,
++	.temp_alert_config	= 0x00000000,
++	.emif_ddr_phy_ctlr_1_init = 0x0024400b,
++	.emif_ddr_phy_ctlr_1	= 0x0e24400b,
++	.emif_ddr_ext_phy_ctrl_1 = 0x10040100,
++	.emif_ddr_ext_phy_ctrl_2 = 0x00910091,
++	.emif_ddr_ext_phy_ctrl_3 = 0x00950095,
++	.emif_ddr_ext_phy_ctrl_4 = 0x009b009b,
++	.emif_ddr_ext_phy_ctrl_5 = 0x009e009e,
++	.emif_rd_wr_lvl_rmp_win	= 0x00000000,
++	.emif_rd_wr_lvl_rmp_ctl	= 0x80000000,
++	.emif_rd_wr_lvl_ctl	= 0x00000000,
++	.emif_rd_wr_exec_thresh	= 0x00000305
++};
++
++/* MT41K256M16TW-107 (with ECC enabled) memory timings */
++const struct emif_regs am574x_emif_532mhz_256M16_ECC_regs = {
++	.sdram_config_init		= 0x61852332,
++	.sdram_config			= 0x61852332,
++	.sdram_config2			= 0x00000000,
++	.ref_ctrl			= 0x100040F1,
++	.ref_ctrl_final			= 0x10001106,
++	.sdram_tim1			= 0xCEEF36F3,
++	.sdram_tim2			= 0x308F7FDA,
++	.sdram_tim3			= 0x407F88A8,
++	.read_idle_ctrl			= 0x00050000,
++	.zq_config			= 0x5007190B,
++	.temp_alert_config		= 0x00000000,
++	.emif_ddr_phy_ctlr_1_init	= 0x0024400C,
++	.emif_ddr_phy_ctlr_1		= 0x0E24400C,
++	.emif_ddr_ext_phy_ctrl_1	= 0x10040100,
++	.emif_ddr_ext_phy_ctrl_2	= 0x00910091,
++	.emif_ddr_ext_phy_ctrl_3	= 0x00950095,
++	.emif_ddr_ext_phy_ctrl_4	= 0x009b009b,
++	.emif_ddr_ext_phy_ctrl_5	= 0x009e009e,
++	.emif_rd_wr_lvl_rmp_win		= 0x00000000,
++	.emif_rd_wr_lvl_rmp_ctl		= 0x80000000,
++	.emif_rd_wr_lvl_ctl		= 0x00000000,
++	.emif_rd_wr_exec_thresh		= 0x00000305,
++	.emif_ecc_ctrl_reg		= 0xD0000001,
++	.emif_ecc_address_range_1	= 0x3FFF0000,
++	.emif_ecc_address_range_2	= 0x00000000,
++};
++
++/* MT41K512M16HA-125 memory timings */
++const struct emif_regs am57xx_emif_532mhz_512M16_regs = {
++	.sdram_config_init	= 0x61851bb2,
++	.sdram_config		= 0x61851bb2,
++	.sdram_config2		= 0x08000000,
++	.ref_ctrl		= 0x000040f1,
++	.ref_ctrl_final		= 0x00001035,
++	.sdram_tim1		= 0xeeef265b,
++	.sdram_tim2		= 0x308f7fda,
++	.sdram_tim3		= 0x409f8ba8,
++	.read_idle_ctrl		= 0x00090000,
++	.zq_config		= 0x5007190b,
++	.temp_alert_config	= 0x00000000,
++	.emif_ddr_phy_ctlr_1_init = 0x0024400b,
++	.emif_ddr_phy_ctlr_1	= 0x0e24400b,
++	.emif_ddr_ext_phy_ctrl_1 = 0x10040100,
++	.emif_ddr_ext_phy_ctrl_2 = 0x00910091,
++	.emif_ddr_ext_phy_ctrl_3 = 0x00950095,
++	.emif_ddr_ext_phy_ctrl_4 = 0x009b009b,
++	.emif_ddr_ext_phy_ctrl_5 = 0x009e009e,
++	.emif_rd_wr_lvl_rmp_win	= 0x00000000,
++	.emif_rd_wr_lvl_rmp_ctl	= 0x80000000,
++	.emif_rd_wr_lvl_ctl	= 0x00000000,
++	.emif_rd_wr_exec_thresh	= 0x00000305
++};
++
++/*
++ * MT41K512M16VRN-107 (with ECC enabled) memory timings
++ * This is a twin die of MT41K512M8 (also used for the ECC), so see that
++ * datasheet for most timings.
++ */
++const struct emif_regs am57xx_emif_532mhz_512M16_ECC_regs = {
++	.sdram_config_init		= 0x61851bb2,
++	.sdram_config			= 0x61851bb2,
++	.sdram_config2			= 0x08000000,
++	.ref_ctrl			= 0x000040f1,
++	.ref_ctrl_final			= 0x00001035,
++	.sdram_tim1			= 0xeeef265b,
++	.sdram_tim2			= 0x308f7fda,
++	.sdram_tim3			= 0x409f88a8,
++	.read_idle_ctrl			= 0x00090000,
++	.zq_config			= 0x5007190b,
++	.temp_alert_config		= 0x00000000,
++	.emif_ddr_phy_ctlr_1_init 	= 0x0024400b,
++	.emif_ddr_phy_ctlr_1		= 0x0e24400b,
++	.emif_ddr_ext_phy_ctrl_1 	= 0x10040100,
++	.emif_ddr_ext_phy_ctrl_2 	= 0x00910091,
++	.emif_ddr_ext_phy_ctrl_3 	= 0x00950095,
++	.emif_ddr_ext_phy_ctrl_4 	= 0x009b009b,
++	.emif_ddr_ext_phy_ctrl_5 	= 0x009e009e,
++	.emif_rd_wr_lvl_rmp_win		= 0x00000000,
++	.emif_rd_wr_lvl_rmp_ctl		= 0x80000000,
++	.emif_rd_wr_lvl_ctl		= 0x00000000,
++	.emif_rd_wr_exec_thresh		= 0x00000305,
++	.emif_ecc_ctrl_reg		= 0xd0000001,
++	// This needs to be not quite 2G due to LISA3 carve out
++	.emif_ecc_address_range_1	= 0x7EFF0000,
++	.emif_ecc_address_range_2	= 0x00000000,
++};
++
++/* Ext phy ctrl regs 1-35 */
++const u32 am57xx_emif_ext_phy_ctrl_const_regs[] = {
++	0x10040100,
++	0x00910091,
++	0x00950095,
++	0x009b009b,
++	0x009e009e,
++	0x00980098,
++	0x00340034,
++	0x00350035,
++	0x00340034,
++	0x00310031,
++	0x00340034,
++	0x007f007f,
++	0x007f007f,
++	0x007f007f,
++	0x007f007f,
++	0x007f007f,
++	0x00480048,
++	0x004a004a,
++	0x00520052,
++	0x00550055,
++	0x00500050,
++	0x00000000,
++	0x00600020,
++	0x40011080,
++	0x08102040,
++	0x0,
++	0x0,
++	0x0,
++	0x0,
++	0x0,
++	0x0,
++	0x0,
++	0x0,
++	0x0,
++	0x0
++};
++
++#endif /* _EMIF_CONFIG_PCM_057_H_ */
+diff --git a/./board/mmrfic/am572x_bel_mmrfic/mux_data.h b/./board/mmrfic/am572x_bel_mmrfic/mux_data.h
+new file mode 100644
+index 0000000..b10e26e
+--- /dev/null
++++ b/./board/mmrfic/am572x_bel_mmrfic/mux_data.h
+@@ -0,0 +1,256 @@
++/*
++ * Copyright (C) 2015 PHYTEC America, LLC
++ * Author: Russell Robinson <rrobinson@phytec.com>
++ *
++ * Based on board/ti/beagle_x15/mux_data.h
++ *
++ * SPDX-License-Identifier:	GPL-2.0+
++ */
++#ifndef _MUX_DATA_PCM057_H_
++#define _MUX_DATA_PCM057_H_
++
++#include <asm/arch/mux_dra7xx.h>
++
++const struct pad_conf_entry core_padconf_array_essential[] = {
++	/* SD Card Slot (MMC1) */
++	{MMC1_CLK, (M0 | PIN_INPUT_PULLUP)},     /* mmc1_clk.clk */
++	{MMC1_CMD, (M0 | PIN_INPUT_PULLUP)},     /* mmc1_cmd.cmd */
++	{MMC1_DAT0, (M0 | PIN_INPUT_PULLUP)},    /* mmc1_dat0.dat0 */
++	{MMC1_DAT1, (M0 | PIN_INPUT_PULLUP)},    /* mmc1_dat1.dat1 */
++	{MMC1_DAT2, (M0 | PIN_INPUT_PULLUP)},    /* mmc1_dat2.dat2 */
++	{MMC1_DAT3, (M0 | PIN_INPUT_PULLUP)},    /* mmc1_dat3.dat3 */
++	{MMC1_SDCD, (M0 | PIN_INPUT_PULLUP)},    /* mmc1_sdcd.sdcd */
++	{MMC1_SDWP, (M14 | PIN_INPUT_PULLDOWN)}, /* mmc1_sdwp.gpio6_28 */
++
++	/* eMMC (MMC2) */
++	{GPMC_A19, (M1 | PIN_INPUT_PULLUP)}, /* gpmc_a19.mmc2_dat4 */
++	{GPMC_A20, (M1 | PIN_INPUT_PULLUP)}, /* gpmc_a20.mmc2_dat5 */
++	{GPMC_A21, (M1 | PIN_INPUT_PULLUP)}, /* gpmc_a21.mmc2_dat6 */
++	{GPMC_A22, (M1 | PIN_INPUT_PULLUP)}, /* gpmc_a22.mmc2_dat7 */
++	{GPMC_A23, (M1 | PIN_INPUT_PULLUP)}, /* gpmc_a23.mmc2_clk */
++	{GPMC_A24, (M1 | PIN_INPUT_PULLUP)}, /* gpmc_a24.mmc2_dat0 */
++	{GPMC_A25, (M1 | PIN_INPUT_PULLUP)}, /* gpmc_a25.mmc2_dat1 */
++	{GPMC_A26, (M1 | PIN_INPUT_PULLUP)}, /* gpmc_a26.mmc2_dat2 */
++	{GPMC_A27, (M1 | PIN_INPUT_PULLUP)}, /* gpmc_a27.mmc2_dat3 */
++	{GPMC_CS1, (M1 | PIN_INPUT_PULLUP)}, /* gpmc_cs1.mmc2_cmd */
++
++	/* NAND (GPMC) */
++	{GPMC_AD0, (M0 | PIN_INPUT_SLEW)}, 			/* gpmc_ad0 */
++	{GPMC_AD1, (M0 | PIN_INPUT_SLEW)}, 			/* gpmc_ad1 */
++	{GPMC_AD2, (M0 | PIN_INPUT_SLEW)}, 			/* gpmc_ad2 */
++	{GPMC_AD3, (M0 | PIN_INPUT_SLEW)}, 			/* gpmc_ad3 */
++	{GPMC_AD4, (M0 | PIN_INPUT_SLEW)}, 			/* gpmc_ad4 */
++	{GPMC_AD5, (M0 | PIN_INPUT_SLEW)}, 			/* gpmc_ad5 */
++	{GPMC_AD6, (M0 | PIN_INPUT_SLEW)}, 			/* gpmc_ad6 */
++	{GPMC_AD7, (M0 | PIN_INPUT_SLEW)}, 			/* gpmc_ad7 */
++	{GPMC_CS0, (M0 | PIN_OUTPUT_PULLUP | SLEWCONTROL)}, 	/* gpmc_cs0 */
++	{GPMC_ADVN_ALE, (M0 | PIN_OUTPUT | SLEWCONTROL)}, 	/* gpmc_advn_ale */
++	{GPMC_OEN_REN, (M0 | PIN_OUTPUT | SLEWCONTROL)}, 	/* gpmc_oen_ren */
++	{GPMC_WEN, (M0 | PIN_OUTPUT | SLEWCONTROL)}, 		/* gpmc_wen */
++	{GPMC_BEN0, (M0 | PIN_OUTPUT | SLEWCONTROL)}, 		/* gpmc_ben0 */
++	{GPMC_WAIT0, (M0 | PIN_INPUT)}, 			/* gpmc_wait0 */
++
++	/* SDIO (MMC3) */
++	{MMC3_CLK, (M0 | PIN_INPUT_PULLUP)},  /* mmc3_clk.clk */
++	{MMC3_CMD, (M0 | PIN_INPUT_PULLUP)},  /* mmc3_cmd.cmd */
++	{MMC3_DAT0, (M0 | PIN_INPUT_PULLUP)}, /* mmc3_dat0.dat0 */
++	{MMC3_DAT1, (M0 | PIN_INPUT_PULLUP)}, /* mmc3_dat1.dat1 */
++	{MMC3_DAT2, (M0 | PIN_INPUT_PULLUP)}, /* mmc3_dat2.dat2 */
++	{MMC3_DAT3, (M0 | PIN_INPUT_PULLUP)}, /* mmc3_dat3.dat3 */
++
++	/* BT_EN */
++	{MMC3_DAT4, (M14 | PIN_OUTPUT_PULLDOWN)}, /* mmc3_dat4.gpio1_22 */
++	/* WLAN EN */
++	{MMC3_DAT6, (M14 | PIN_OUTPUT_PULLDOWN)}, /* mmc3_dat6.gpio1_24 */
++	/* WLAN_IRQ */
++	{MMC3_DAT7, (M14 | PIN_INPUT_PULLUP)},    /* mmc3_dat7.gpio1_15 */
++
++	/* MDIO bus */
++	{MDIO_MCLK, (M0 | PIN_OUTPUT)}, /* mdio_mclk  */
++	{MDIO_D, (M0 | PIN_INPUT)},     /* mdio_d  */
++
++	/* ETH0 (RGMII0) */
++	{RGMII0_TXC, (M0 | PIN_OUTPUT | MANUAL_MODE)},   /* rgmii0_txc.rgmii0_txc */
++	{RGMII0_TXCTL, (M0 | PIN_OUTPUT | MANUAL_MODE)}, /* rgmii0_txctl.rgmii0_txctl */
++	{RGMII0_TXD3, (M0 | PIN_OUTPUT | MANUAL_MODE)},  /* rgmii0_txd3.rgmii0_txd3 */
++	{RGMII0_TXD2, (M0 | PIN_OUTPUT | MANUAL_MODE)},  /* rgmii0_txd2.rgmii0_txd2 */
++	{RGMII0_TXD1, (M0 | PIN_OUTPUT | MANUAL_MODE)},  /* rgmii0_txd1.rgmii0_txd1 */
++	{RGMII0_TXD0, (M0 | PIN_OUTPUT | MANUAL_MODE)},  /* rgmii0_txd0.rgmii0_txd0 */
++	{RGMII0_RXC, (M0 | PIN_INPUT | MANUAL_MODE)},    /* rgmii0_rxc.rgmii0_rxc */
++	{RGMII0_RXCTL, (M0 | PIN_INPUT | MANUAL_MODE)},  /* rgmii0_rxctl.rgmii0_rxctl */
++	{RGMII0_RXD3, (M0 | PIN_INPUT | MANUAL_MODE)},   /* rgmii0_rxd3.rgmii0_rxd3 */
++	{RGMII0_RXD2, (M0 | PIN_INPUT | MANUAL_MODE)},   /* rgmii0_rxd2.rgmii0_rxd2 */
++	{RGMII0_RXD1, (M0 | PIN_INPUT | MANUAL_MODE)},   /* rgmii0_rxd1.rgmii0_rxd1 */
++	{RGMII0_RXD0, (M0 | PIN_INPUT | MANUAL_MODE)},   /* rgmii0_rxd0.rgmii0_rxd0 */
++	/* nETH0_RST */
++	{RMII_MHZ_50_CLK, (M14 | PIN_INPUT_PULLUP)},     /* rmii_mhz_50_clk.gpio5_17 */
++	/* ETH0 IRQ */
++	{VIN2A_CLK0, (M14 | PIN_INPUT)},                 /* vin2a_clk0.gpio3_28 */
++
++	/* ETH1 (RGMII1) */
++	{VIN2A_D12, (M3 | PIN_OUTPUT | MANUAL_MODE)}, /* vin2a_d12.rgmii1_txc */
++	{VIN2A_D13, (M3 | PIN_OUTPUT | MANUAL_MODE)}, /* vin2a_d13.rgmii1_txctl */
++	{VIN2A_D14, (M3 | PIN_OUTPUT | MANUAL_MODE)}, /* vin2a_d14.rgmii1_txd3 */
++	{VIN2A_D15, (M3 | PIN_OUTPUT | MANUAL_MODE)}, /* vin2a_d15.rgmii1_txd2 */
++	{VIN2A_D16, (M3 | PIN_OUTPUT | MANUAL_MODE)}, /* vin2a_d16.rgmii1_txd1 */
++	{VIN2A_D17, (M3 | PIN_OUTPUT | MANUAL_MODE)}, /* vin2a_d17.rgmii1_txd0 */
++	{VIN2A_D18, (M3 | PIN_INPUT | MANUAL_MODE)},  /* vin2a_d18.rgmii1_rxc */
++	{VIN2A_D19, (M3 | PIN_INPUT | MANUAL_MODE)},  /* vin2a_d19.rgmii1_rxctl */
++	{VIN2A_D20, (M3 | PIN_INPUT | MANUAL_MODE)},  /* vin2a_d20.rgmii1_rxd3 */
++	{VIN2A_D21, (M3 | PIN_INPUT | MANUAL_MODE)},  /* vin2a_d21.rgmii1_rxd2 */
++	{VIN2A_D22, (M3 | PIN_INPUT | MANUAL_MODE)},  /* vin2a_d22.rgmii1_rxd1 */
++	{VIN2A_D23, (M3 | PIN_INPUT | MANUAL_MODE)},  /* vin2a_d23.rgmii1_rxd0 */
++	/* ETH1 IRQ */
++	{GPMC_A12, (M14 | PIN_INPUT)},                /* gpmc_a12.gpio2_2 */
++
++	/* USB1 and USB2 DRVVBUS */
++	{USB1_DRVVBUS, (M0 | PIN_OUTPUT)},          /* usb1_drvvbus.usb1_drvvbus */
++	{USB2_DRVVBUS, (M0 | PIN_OUTPUT_PULLDOWN)}, /* usb2_drvvbus.usb2_drvvbus */
++
++	/* QSPI NOR (QSPI1) */
++	{GPMC_CS2, (M1 | PIN_OUTPUT | MANUAL_MODE)}, /* gpmc_cs2.qspi1_cs0 */
++	{GPMC_CS3, (M1 | PIN_OUTPUT | MANUAL_MODE)}, /* gpmc_cs3.qspi1_cs1 */
++	{GPMC_A3, (M1 | PIN_OUTPUT | MANUAL_MODE)},  /* gpmc_a3.qspi1_cs2 */
++	{GPMC_A13, (M1 | PIN_INPUT | MANUAL_MODE)},  /* gpmc_a13.qspi1_rtclk */
++	{GPMC_A18, (M1 | PIN_INPUT | MANUAL_MODE)},  /* gpmc_a18.qspi1_sclk */
++	{GPMC_A16, (M1 | PIN_INPUT | MANUAL_MODE)},  /* gpmc_a16.qspi1_d0 */
++	{GPMC_A17, (M1 | PIN_INPUT | MANUAL_MODE)},  /* gpmc_a17.qspi1_d1 */
++	{GPMC_A15, (M1 | PIN_INPUT | MANUAL_MODE)}, /* gpmc_a15.qspi1_d2 */
++	{GPMC_A14, (M1 | PIN_INPUT | MANUAL_MODE)}, /* gpmc_a14.qspi1_d3 */
++
++
++	/* LCD display (vout2) */
++	{VIN2A_DE0, (M4 | PIN_OUTPUT)},    /* vin2a_de0.vout2_de */
++	{VIN2A_FLD0, (M4 | PIN_OUTPUT)},   /* vin2a_fld0.vout2_clk */
++	{VIN2A_HSYNC0, (M4 | PIN_OUTPUT)}, /* vin2a_hsync0.vout2_hsync */
++	{VIN2A_VSYNC0, (M4 | PIN_OUTPUT)}, /* vin2a_vsync0.vout2_vsync */
++	{MCASP1_ACLKR, (M6 | PIN_OUTPUT)}, /* mcasp1_aclkr.vout2_d0 */
++	{MCASP1_FSR, (M6 | PIN_OUTPUT)},   /* mcasp1_fsr.vout2_d1 */
++	{MCASP1_AXR2, (M6 | PIN_OUTPUT)},  /* mcasp1_axr2.vout2_d2 */
++	{MCASP1_AXR3, (M6 | PIN_OUTPUT)},  /* mcasp1_axr3.vout2_d3 */
++	{MCASP1_AXR4, (M6 | PIN_OUTPUT)},  /* mcasp1_axr4.vout2_d4 */
++	{MCASP1_AXR5, (M6 | PIN_OUTPUT)},  /* mcasp1_axr5.vout2_d5 */
++	{MCASP1_AXR6, (M6 | PIN_OUTPUT)},  /* mcasp1_axr6.vout2_d6 */
++	{MCASP1_AXR7, (M6 | PIN_OUTPUT)},  /* mcasp1_axr7.vout2_d7 */
++	{MCASP2_ACLKR, (M6 | PIN_OUTPUT)}, /* mcasp2_aclkr.vout2_d8 */
++	{MCASP2_FSR, (M6 | PIN_OUTPUT)},   /* mcasp2_fsr.vout2_d9 */
++	{MCASP2_AXR0, (M6 | PIN_OUTPUT)},  /* mcasp2_axr0.vout2_d10 */
++	{MCASP2_AXR1, (M6 | PIN_OUTPUT)},  /* mcasp2_axr1.vout2_d11 */
++	{MCASP2_AXR4, (M6 | PIN_OUTPUT)},  /* mcasp2_axr4.vout2_d12 */
++	{MCASP2_AXR5, (M6 | PIN_OUTPUT)},  /* mcasp2_axr5.vout2_d13 */
++	{MCASP2_AXR6, (M6 | PIN_OUTPUT)},  /* mcasp2_axr6.vout2_d14 */
++	{MCASP2_AXR7, (M6 | PIN_OUTPUT)},  /* mcasp2_axr7.vout2_d15 */
++	{MCASP4_ACLKX, (M6 | PIN_OUTPUT)}, /* mcasp4_aclkx.vout2_d16 */
++	{MCASP4_FSX, (M6 | PIN_OUTPUT)},   /* mcasp4_fsx.vout2_d17 */
++	{MCASP4_AXR0, (M6 | PIN_OUTPUT)},  /* mcasp4_axr0.vout2_d18 */
++	{MCASP4_AXR1, (M6 | PIN_OUTPUT)},  /* mcasp4_axr1.vout2_d19 */
++	{MCASP5_ACLKX, (M6 | PIN_OUTPUT)}, /* mcasp5_aclkx.vout2_d20 */
++	{MCASP5_FSX, (M6 | PIN_OUTPUT)},   /* mcasp5_fsx.vout2_d21 */
++	{MCASP5_AXR0, (M6 | PIN_OUTPUT)},  /* mcasp5_axr0.vout2_d22 */
++	{MCASP5_AXR1, (M6 | PIN_OUTPUT)},  /* mcasp5_axr1.vout2_d23 */
++	/* LCD EN */
++	{VOUT1_D23, (M14 | PIN_OUTPUT_PULLDOWN)}, /* vout1_d23.gpio8_23 */
++	/* Backlight PWM */
++	{VIN1A_D0, (M10 | PIN_OUTPUT_PULLDOWN)},  /* vin1a_d0.ehrpwm1A */
++	/* EDT Touch IRQ */
++	{VOUT1_D22, (M14 | PIN_INPUT_PULLUP)},    /* vout1_d22.gpio8_22 */
++
++	/* PCIe PERSTn/PWRGD */
++	{VOUT1_D4, (M14 | PIN_INPUT_PULLDOWN)}, /* vout1_d4.gpio8_4 */
++	/* PCIe (U28-OE) */
++	{VOUT1_D7, (M14 | PIN_INPUT_PULLUP)},   /* vout1_d7.gpio8_7 */
++
++	/* VTT_EN */
++	{VIN2A_D7, (M14 | PIN_OUTPUT)}, /* vin2a_d7.gpio4_8 */
++
++	{ON_OFF, (M1 | PIN_OUTPUT)},  /* on_off.on_off */
++	{RTC_PORZ, (M0 | PIN_INPUT)}, /* rtc_porz.rtc_porz */
++	{RTCK, (M0 | PIN_OUTPUT)},    /* rtck.rtck */
++	{EMU0, (M0 | PIN_INPUT)},     /* emu0.emu0 */
++	{EMU1, (M0 | PIN_INPUT)},     /* emu1.emu1 */
++	{NMIN_DSP, (M0 | PIN_INPUT)}, /* nmin_dsp.nmin_dsp */
++	{RSTOUTN, (M0 | PIN_OUTPUT)}, /* rstoutn.rstoutn */
++
++};
++
++const struct pad_conf_entry early_padconf[] = {
++	/* RS232 (UART3) */
++	{UART3_RXD, (M0 | PIN_INPUT_SLEW)}, /* UART3_RXD */
++	{UART3_TXD, (M0 | PIN_INPUT_SLEW)}, /* UART3_TXD */
++
++	/* RS232 (UART5) */
++	{VOUT1_D0, (M2 | PIN_INPUT_SLEW)},  /* VOUT1_D0.UART5_RXD */
++	{VOUT1_D1, (M2 | PIN_INPUT_SLEW)},  /* VOUT1_D1.UART5_TXD */
++
++	/* I2C1 */
++	{I2C1_SDA, (M0 | PIN_INPUT_PULLUP)}, /* I2C1_SDA */
++	{I2C1_SCL, (M0 | PIN_INPUT_PULLUP)}, /* I2C1_SCL */
++};
++
++#ifdef CONFIG_IODELAY_RECALIBRATION
++const struct iodelay_cfg_entry iodelay_cfg_array_sr1_1[] = {
++	{0x06F0, 480, 0},    /* CFG_RGMII0_RXC_IN */
++	{0x06FC, 111, 1641}, /* CFG_RGMII0_RXCTL_IN */
++	{0x0708, 272, 1116}, /* CFG_RGMII0_RXD0_IN */
++	{0x0714, 243, 1260}, /* CFG_RGMII0_RXD1_IN */
++	{0x0720, 0, 1614},   /* CFG_RGMII0_RXD2_IN */
++	{0x072C, 105, 1673}, /* CFG_RGMII0_RXD3_IN */
++	{0x0740, 531, 120},  /* CFG_RGMII0_TXC_OUT */
++	{0x074C, 201, 60},   /* CFG_RGMII0_TXCTL_OUT */
++	{0x0758, 229, 120},  /* CFG_RGMII0_TXD0_OUT */
++	{0x0764, 141, 0},    /* CFG_RGMII0_TXD1_OUT */
++	{0x0770, 495, 120},  /* CFG_RGMII0_TXD2_OUT */
++	{0x077C, 660, 120},  /* CFG_RGMII0_TXD3_OUT */
++	{0x0A70, 1551, 115}, /* CFG_VIN2A_D12_OUT */
++	{0x0A7C, 816, 0},    /* CFG_VIN2A_D13_OUT */
++	{0x0A88, 876, 0},    /* CFG_VIN2A_D14_OUT */
++	{0x0A94, 312, 0},    /* CFG_VIN2A_D15_OUT */
++	{0x0AA0, 58, 0},     /* CFG_VIN2A_D16_OUT */
++	{0x0AAC, 0, 0},      /* CFG_VIN2A_D17_OUT */
++	{0x0AB0, 702, 0},    /* CFG_VIN2A_D18_IN */
++	{0x0ABC, 136, 976},  /* CFG_VIN2A_D19_IN */
++	{0x0AD4, 210, 1357}, /* CFG_VIN2A_D20_IN */
++	{0x0AE0, 189, 1462}, /* CFG_VIN2A_D21_IN */
++	{0x0AEC, 232, 1278}, /* CFG_VIN2A_D22_IN */
++	{0x0AF8, 0, 1397},   /* CFG_VIN2A_D23_IN */
++};
++
++const struct iodelay_cfg_entry iodelay_cfg_array_sr2_0[] = {
++	{0x0218, 114, 0},     /* CFG_GPMC_A3_OUT */
++	{0x0144, 0, 0},       /* CFG_GPMC_A13_IN */
++	{0x0150, 2575, 966},  /* CFG_GPMC_A14_IN */
++	{0x015C, 2503, 889},  /* CFG_GPMC_A15_IN */
++	{0x0168, 2528, 1007}, /* CFG_GPMC_A16_IN */
++	{0x0170, 0, 0},       /* CFG_GPMC_A16_OUT */
++	{0x0174, 2533, 980},  /* CFG_GPMC_A17_IN */
++	{0x0188, 590, 0},     /* CFG_GPMC_A18_OUT */
++	{0x0374, 0, 0},       /* CFG_GPMC_CS2_OUT */
++	{0x0380, 70, 0},      /* CFG_GPMC_CS3_OUT */
++	{0x06F0, 260, 0},     /* CFG_RGMII0_RXC_IN */
++	{0x06FC, 0, 1412},    /* CFG_RGMII0_RXCTL_IN */
++	{0x0708, 123, 1047},  /* CFG_RGMII0_RXD0_IN */
++	{0x0714, 139, 1081},  /* CFG_RGMII0_RXD1_IN */
++	{0x0720, 195, 1100},  /* CFG_RGMII0_RXD2_IN */
++	{0x072C, 239, 1216},  /* CFG_RGMII0_RXD3_IN */
++	{0x0740, 89, 0},      /* CFG_RGMII0_TXC_OUT */
++	{0x074C, 15, 125},    /* CFG_RGMII0_TXCTL_OUT */
++	{0x0758, 339, 162},   /* CFG_RGMII0_TXD0_OUT */
++	{0x0764, 146, 94},    /* CFG_RGMII0_TXD1_OUT */
++	{0x0770, 0, 27},      /* CFG_RGMII0_TXD2_OUT */
++	{0x077C, 291, 205},   /* CFG_RGMII0_TXD3_OUT */
++	{0x0A70, 0, 0},       /* CFG_VIN2A_D12_OUT */
++	{0x0A7C, 219, 101},   /* CFG_VIN2A_D13_OUT */
++	{0x0A88, 92, 58},     /* CFG_VIN2A_D14_OUT */
++	{0x0A94, 135, 100},   /* CFG_VIN2A_D15_OUT */
++	{0x0AA0, 154, 101},   /* CFG_VIN2A_D16_OUT */
++	{0x0AAC, 78, 27},     /* CFG_VIN2A_D17_OUT */
++	{0x0AB0, 411, 0},     /* CFG_VIN2A_D18_IN */
++	{0x0ABC, 0, 382},     /* CFG_VIN2A_D19_IN */
++	{0x0AD4, 320, 750},   /* CFG_VIN2A_D20_IN */
++	{0x0AE0, 192, 836},   /* CFG_VIN2A_D21_IN */
++	{0x0AEC, 294, 669},   /* CFG_VIN2A_D22_IN */
++	{0x0AF8, 5, 700},     /* CFG_VIN2A_D23_IN */
++};
++#endif
++
++#endif /* _MUX_DATA_PCM057_H_ */
+diff --git a/./board/mmrfic/common/Kconfig b/./board/mmrfic/common/Kconfig
+new file mode 100644
+index 0000000..7496e7d
+--- /dev/null
++++ b/./board/mmrfic/common/Kconfig
+@@ -0,0 +1,38 @@
++config PHYTEC_EEPROM
++	bool "Support for EEPROM-based board detection for PHYTEC platforms"
++	default y
++
++if PHYTEC_EEPROM
++
++config PHYTEC_EEPROM_COMPAT
++	bool "Support for reading EEPROM format found in pre-PD20.1.0 releases"
++	default y
++
++config PHYTEC_EEPROM_FORCE_KIT
++	bool "Force U-Boot to configure based upon PHYTEC kit option string"
++	default n
++	help
++	  Force U-Boot to act as if it were reading EEPROM content
++	  that corresponds to a PHYTEC kit option string. This option is
++	  intended for debug, recovery, and development. If you are unsure
++	  of how this option is used, answer N.
++
++if AM572X_BEL_MMRFIC
++
++config AM572X_BEL_MMRFIC_STR
++        string "am572x bel mmrfic option string"
++        default "413451321"
++
++if PHYTEC_EEPROM_FORCE_KIT
++
++config PHYTEC_EEPROM_FORCE_KIT_STR
++	string "PHYTEC kit option string"
++	default "41300111IA0"
++
++endif
++
++endif
++
++config PHYTEC_NAND
++	bool "Support for NAND on PHYTEC platforms"
++	default n
+diff --git a/./board/mmrfic/common/Makefile b/./board/mmrfic/common/Makefile
+new file mode 100644
+index 0000000..7a1c7ea
+--- /dev/null
++++ b/./board/mmrfic/common/Makefile
+@@ -0,0 +1,7 @@
++#
++# Copyright (C) 2017 PHYTEC America, LLC
++#
++# SPDX-License-Identifier:	GPL-2.0+
++#
++
++obj-${CONFIG_PHYTEC_EEPROM}	+= phytec_eeprom.o
+diff --git a/./board/mmrfic/common/env_locations.h b/./board/mmrfic/common/env_locations.h
+new file mode 100644
+index 0000000..de66cbe
+--- /dev/null
++++ b/./board/mmrfic/common/env_locations.h
+@@ -0,0 +1,88 @@
++/*
++ * Copyright (C) 2019 PHYTEC America, LLC
++ *
++ * SPDX-License-Identifier:	GPL-2.0+
++ */
++
++#ifndef _ENV_LOCATIONS_PHYTEC_H_
++#define _ENV_LOCATIONS_PHYTEC_H_
++
++static enum env_location priority_flash[] = {
++#ifdef CONFIG_ENV_IS_IN_EEPROM
++	ENVL_EEPROM,
++#endif
++#ifdef CONFIG_ENV_IS_IN_EXT4
++	ENVL_EXT4,
++#endif
++#ifdef CONFIG_ENV_IS_IN_FLASH
++	ENVL_FLASH,
++#endif
++#ifdef CONFIG_ENV_IS_IN_MMC
++	ENVL_MMC,
++#endif
++#ifdef CONFIG_ENV_IS_IN_NAND
++	ENVL_NAND,
++#endif
++#ifdef CONFIG_ENV_IS_IN_FAT
++	ENVL_FAT,
++#endif
++#ifdef CONFIG_ENV_IS_IN_NVRAM
++	ENVL_NVRAM,
++#endif
++#ifdef CONFIG_ENV_IS_IN_REMOTE
++	ENVL_REMOTE,
++#endif
++#ifdef CONFIG_ENV_IS_IN_SATA
++	ENVL_ESATA,
++#endif
++#ifdef CONFIG_ENV_IS_IN_SPI_FLASH
++	ENVL_SPI_FLASH,
++#endif
++#ifdef CONFIG_ENV_IS_IN_UBI
++	ENVL_UBI,
++#endif
++#ifdef CONFIG_ENV_IS_NOWHERE
++	ENVL_NOWHERE,
++#endif
++};
++
++static enum env_location priority_fat[] = {
++#ifdef CONFIG_ENV_IS_IN_EEPROM
++	ENVL_EEPROM,
++#endif
++#ifdef CONFIG_ENV_IS_IN_EXT4
++	ENVL_EXT4,
++#endif
++#ifdef CONFIG_ENV_IS_IN_FAT
++	ENVL_FAT,
++#endif
++#ifdef CONFIG_ENV_IS_IN_FLASH
++	ENVL_FLASH,
++#endif
++#ifdef CONFIG_ENV_IS_IN_MMC
++	ENVL_MMC,
++#endif
++#ifdef CONFIG_ENV_IS_IN_NAND
++	ENVL_NAND,
++#endif
++#ifdef CONFIG_ENV_IS_IN_NVRAM
++	ENVL_NVRAM,
++#endif
++#ifdef CONFIG_ENV_IS_IN_REMOTE
++	ENVL_REMOTE,
++#endif
++#ifdef CONFIG_ENV_IS_IN_SATA
++	ENVL_ESATA,
++#endif
++#ifdef CONFIG_ENV_IS_IN_SPI_FLASH
++	ENVL_SPI_FLASH,
++#endif
++#ifdef CONFIG_ENV_IS_IN_UBI
++	ENVL_UBI,
++#endif
++#ifdef CONFIG_ENV_IS_NOWHERE
++	ENVL_NOWHERE,
++#endif
++};
++
++#endif /* _ENV_LOCATIONS_PHYTEC_H_ */
+diff --git a/./board/mmrfic/common/phytec_eeprom.c b/./board/mmrfic/common/phytec_eeprom.c
+new file mode 100644
+index 0000000..f85094b
+--- /dev/null
++++ b/./board/mmrfic/common/phytec_eeprom.c
+@@ -0,0 +1,284 @@
++/*
++ * Copyright (C) 2017 PHYTEC America, LLC
++ *
++ * Based on board/ti/common/board_detect.c
++ *
++ * SPDX-License-Identifier:     GPL-2.0+
++ */
++
++#include <common.h>
++#include <dm/uclass.h>
++#include <i2c.h>
++
++#include "phytec_eeprom.h"
++
++__weak void gpi2c_init(void)
++{
++}
++
++#if !defined(CONFIG_DM_I2C)
++static int __maybe_unused phytec_i2c_eeprom_init(int bus_addr, int dev_addr)
++{
++	int rc;
++
++	if (bus_addr >= 0x0) {
++		rc = i2c_set_bus_num(bus_addr);
++		if (rc)
++			return rc;
++	}
++
++	return i2c_probe(dev_addr);
++}
++#endif
++
++static int __maybe_unused count_ep_bits(const struct phytec_common_eeprom *ep)
++{
++	int count = 0;
++	int i;
++
++	count += count_uchar_bits(ep->api_version);
++	count += count_uchar_bits(ep->som_pcb_rev);
++	count += count_uchar_bits(ep->ksp);
++	count += count_uchar_bits(ep->kspno);
++
++	for (i = 0; i < sizeof(ep->kit_opt); i++)
++		count += count_uchar_bits(ep->kit_opt[i]);
++
++	for (i = 0; i < sizeof(ep->mac); i++)
++		count += count_uchar_bits(ep->mac[i]);
++
++	return count;
++}
++
++int __maybe_unused phytec_i2c_eeprom_get(int bus_addr, int dev_addr)
++{
++	struct phytec_common_eeprom *ep = PHYTEC_EEPROM_DATA;
++#if defined(CONFIG_PHYTEC_EEPROM_COMPAT)
++	struct phytec_old_eeprom *old_ep = PHYTEC_OLD_EEPROM_DATA;
++#endif
++	uint32_t addr_len = 0x2;
++	int rc;
++#if defined(CONFIG_DM_I2C)
++	struct udevice *i2c_dev;
++	struct udevice *i2c_bus;
++#endif
++#if defined(CONFIG_PHYTEC_EEPROM_FORCE_KIT_STR)
++	char* force_kit = CONFIG_PHYTEC_EEPROM_FORCE_KIT_STR;
++#endif
++
++#if !defined(CONFIG_SPL_BUILD)
++	if (count_ep_bits(ep) == ep->hw8)
++		return 0;	/* EEPROM has already been read */
++#endif
++	/* Ensure fall-through to defaults on EEPROM read failure */
++	memset(&ep->kit_opt, 0xFF, sizeof(ep->kit_opt));
++
++#if defined(CONFIG_PHYTEC_EEPROM_FORCE_KIT)
++	/* copy defconfig string to kit_opt and set hw8 */
++	strncpy((char *)&ep->kit_opt, force_kit, sizeof(ep->kit_opt));
++	ep->hw8 = count_ep_bits(ep);
++
++	return 0;
++#endif
++
++#if defined(CONFIG_DM_I2C)
++	rc = uclass_get_device_by_seq(UCLASS_I2C, bus_addr, &i2c_bus);
++	if (rc) {
++		printf("%s: uclass_get_device_by_seq failed: %d\n",
++			__func__, rc);
++		return rc;
++	}
++
++	rc = i2c_get_chip(i2c_bus, dev_addr, 0x1, &i2c_dev);
++	if (rc) {
++		printf("%s: i2c_get_chip failed: %d\n",
++			__func__, rc);
++		return rc;
++	}
++
++	rc = i2c_set_chip_offset_len(i2c_dev, addr_len);
++	if (rc) {
++		printf("%s: i2c_set_chip_offset_len failed: %d\n",
++			__func__, rc);
++		return rc;
++	}
++
++	rc = dm_i2c_read(i2c_dev, 0x0, (uint8_t *)ep, PHYTEC_EEPROM_SIZE);
++	/*
++	 * read the eeprom header using i2c again, but use only a
++	 * 1 byte address (some legacy boards need this..)
++	 */
++	if (rc) {
++		rc =  i2c_set_chip_offset_len(i2c_dev, 0x1);
++		if (rc) {
++			printf("%s: i2c_set_chip_offset_len failed: %d\n",
++				__func__, rc);
++			return rc;
++		}
++
++		rc = dm_i2c_read(i2c_dev, 0x0, (uint8_t *)ep, PHYTEC_EEPROM_SIZE);
++	}
++#else /* !defined(CONFIG_DM_I2C) */
++	gpi2c_init();
++	rc = phytec_i2c_eeprom_init(bus_addr, dev_addr);
++	if (rc)
++		return rc;
++
++	rc = i2c_read(dev_addr, 0x0, addr_len, (uint8_t *)ep, PHYTEC_EEPROM_SIZE);
++#endif
++
++	/* If EEPROM read fails */
++	if (rc)
++		return rc;
++
++#if defined(CONFIG_PHYTEC_EEPROM_COMPAT)
++	if (old_ep->header == PHYTEC_EEPROM_HEADER_MAGIC) {
++		/* shuffle values without using malloc or stack */
++		ep->api_version = old_ep->api_version;
++		ep->som_pcb_rev = old_ep->som_pcb_rev;
++		ep->ksp = old_ep->ksp;
++		ep->kspno = old_ep->kspno;
++		ep->kit_opt[0] = old_ep->kit_opt[0];
++		ep->kit_opt[1] = old_ep->kit_opt[1];
++		ep->kit_opt[2] = old_ep->kit_opt[2];
++		ep->mac[1] = old_ep->mac[1];
++		ep->mac[2] = old_ep->mac[2];
++		ep->mac[3] = old_ep->mac[3];
++		ep->mac[4] = old_ep->mac[4];
++		ep->mac[5] = old_ep->mac[5];
++		ep->hw8 = old_ep->mac[0];
++		ep->kit_opt[3] = old_ep->kit_opt[3];
++		ep->kit_opt[4] = old_ep->kit_opt[4];
++		ep->kit_opt[5] = old_ep->kit_opt[5];
++		ep->kit_opt[6] = old_ep->kit_opt[6];
++		ep->kit_opt[7] = old_ep->kit_opt[7];
++		ep->kit_opt[8] = old_ep->kit_opt[8];
++		ep->kit_opt[9] = old_ep->kit_opt[9];
++		ep->kit_opt[10] = old_ep->kit_opt[10];
++		ep->mac[0] = ep->hw8;
++
++		/* zero reserved bits and set hw8 */
++		memset(&ep->reserved, 0x0, sizeof(ep->reserved));
++		ep->hw8 = count_ep_bits(ep);
++	}
++
++#endif
++	return 0;
++}
++
++int __maybe_unused phytec_i2c_eeprom_set(int bus_addr, int dev_addr,
++		struct phytec_common_eeprom *ep)
++{
++	int rc;
++	uint32_t addr_len = 0x2;
++#if defined(CONFIG_DM_I2C)
++	struct udevice *i2c_dev;
++	struct udevice *i2c_bus;
++#endif
++
++	if (!ep || (count_ep_bits(ep) != ep->hw8))
++		return -EINVAL;
++
++#if defined(CONFIG_DM_I2C)
++	rc = uclass_get_device_by_seq(UCLASS_I2C, bus_addr, &i2c_bus);
++	if (rc) {
++		printf("%s: uclass_get_device_by_seq failed: %d\n",
++			__func__, rc);
++		return rc;
++	}
++
++	rc = i2c_get_chip(i2c_bus, dev_addr, 0x1, &i2c_dev);
++	if (rc) {
++		printf("%s: i2c_get_chip failed: %d\n",
++			__func__, rc);
++		return rc;
++	}
++
++	rc = i2c_set_chip_offset_len(i2c_dev, addr_len);
++	if (rc) {
++		printf("%s: i2c_set_chip_offset_len failed: %d\n",
++			__func__, rc);
++		return rc;
++	}
++
++	rc = dm_i2c_write(i2c_dev, 0x0, (uint8_t *)ep, PHYTEC_EEPROM_SIZE);
++	if (rc) {
++		printf("%s: dm_i2c_write failed: %d\n",
++			__func__, rc);
++		return rc;
++	}
++#else /* !defined(CONFIG_DM_I2C) */
++	gpi2c_init();
++	rc = phytec_i2c_eeprom_init(bus_addr, dev_addr);
++	if (rc)
++		return rc;
++
++	rc = i2c_write(dev_addr, 0x0, addr_len,
++			(uint8_t *)ep, PHYTEC_EEPROM_SIZE);
++	if (rc) {
++		printf("%s: i2c_write failed: %d\n",
++			__func__, rc);
++		return rc;
++	}
++#endif
++
++	return 0;
++}
++
++int __maybe_unused phytec_i2c_eeprom_compare(int bus_addr, int dev_addr,
++		struct phytec_common_eeprom *ep)
++{
++	int rc;
++	struct phytec_common_eeprom *phytec_ep;
++
++	if (!ep)
++		return -EINVAL;
++
++	rc = phytec_i2c_eeprom_get(bus_addr, dev_addr);
++
++	if (rc) {
++		printf("%s: phytec_i2c_eeprom_get failed: %d\n",
++			__func__, rc);
++		return rc;
++	}
++
++	phytec_ep = PHYTEC_EEPROM_DATA;
++
++	if (ep->api_version != phytec_ep->api_version)
++		return -EINVAL;
++
++	if (ep->som_pcb_rev != phytec_ep->som_pcb_rev)
++		return -EINVAL;
++
++	if (ep->ksp != phytec_ep->ksp)
++		return -EINVAL;
++
++	if (ep->kspno != phytec_ep->kspno)
++		return -EINVAL;
++
++	rc = strncmp((const char *)ep->kit_opt,
++			(const char *)phytec_ep->kit_opt, 11);
++	if (rc)
++		return -EINVAL;
++
++	rc = strncmp((const char *)ep->mac, (const char *)phytec_ep->mac, 6);
++	if (rc)
++		return -EINVAL;
++
++	if (ep->hw8 != phytec_ep->hw8)
++		return -EINVAL;
++
++	return 0;
++}
++
++bool __maybe_unused phytec_board_match(char *opt_str)
++{
++	struct phytec_common_eeprom *ep = PHYTEC_EEPROM_DATA;
++	size_t cfg_len = strlen(opt_str);
++	size_t kit_opt_len = sizeof(ep->kit_opt)/sizeof(ep->kit_opt[0]);
++
++	if ((cfg_len > kit_opt_len) || (count_ep_bits(ep) != ep->hw8))
++		return false;
++
++	return !strncmp((char *)ep->kit_opt, (char *)opt_str, cfg_len);
++}
+diff --git a/./board/mmrfic/common/phytec_eeprom.h b/./board/mmrfic/common/phytec_eeprom.h
+new file mode 100644
+index 0000000..3396d76
+--- /dev/null
++++ b/./board/mmrfic/common/phytec_eeprom.h
+@@ -0,0 +1,114 @@
++/*
++ * Copyright (C) 2017 PHYTEC America, LLC
++ *
++ * Based on board/ti/common/board_detect.h
++ *
++ * SPDX-License-Identifier:     GPL-2.0+
++ */
++
++#ifndef __PHYTEC_EEPROM_H
++#define __PHYTEC_EEPROM_H
++
++#ifndef PHYTEC_SRAM_SCRATCH_BOARD_EEPROM_START
++#define PHYTEC_SRAM_SCRATCH_BOARD_EEPROM_START (SRAM_SCRATCH_SPACE_ADDR + 0x28)
++#define PHYTEC_SRAM_SCRATCH_BOARD_EEPROM_END (SRAM_SCRATCH_SPACE_ADDR + 0x200)
++#endif
++
++#define PHYTEC_EEPROM_DATA ((struct phytec_common_eeprom *)\
++		PHYTEC_SRAM_SCRATCH_BOARD_EEPROM_START)
++
++#define PHYTEC_EEPROM_SIZE	32
++
++#if defined(CONFIG_PHYTEC_EEPROM_COMPAT)
++#define PHYTEC_EEPROM_HEADER_MAGIC     0x07052017
++
++#define PHYTEC_OLD_EEPROM_DATA ((struct phytec_old_eeprom *)\
++		PHYTEC_SRAM_SCRATCH_BOARD_EEPROM_START)
++#endif
++
++/* struct phytec_common_eeprom represents PHYTEC boards and config options */
++struct phytec_common_eeprom {
++	unsigned char api_version;	/* EEPROM layout API version */
++	unsigned char som_pcb_rev;	/* SOM PCB revision */
++	unsigned char ksp;		/* 1: KSP, 2: KSM */
++	unsigned char kspno;		/* Number for KSP/KSM module */
++	unsigned char kit_opt[11];	/* coding for variants */
++	unsigned char reserved[10];	/* not used */
++	unsigned char mac[6];
++	unsigned char hw8;		/* Bits set in previous bytes */
++} __attribute__ ((__packed__));
++/* sizeof(struct phytec_common_eeprom) == 32 */
++
++#if defined(CONFIG_PHYTEC_EEPROM_COMPAT)
++/* struct phytec_old_eeprom for backwards compat */
++struct phytec_old_eeprom {
++	uint32_t header;		/* PHYTEC EEPROM header */
++	unsigned char api_version;	/* EEPROM layout API version */
++	unsigned char mod_version;	/* PCM/PFL/PCA */
++	unsigned char som_pcb_rev;	/* SOM PCB revision */
++	unsigned char mac[6];
++	unsigned char ksp;		/* 1: KSP, 2: KSM */
++	unsigned char kspno;		/* Number for KSP/KSM module */
++	unsigned char kit_opt[11];	/* coding for variants */
++	unsigned char reserved[5];	/* not used */
++	unsigned char bs;		/* Bits set in previous bytes */
++} __attribute__ ((__packed__));
++/* sizeof(struct phytec_old_eeprom) == 32 */
++#endif
++
++static inline int __maybe_unused count_uchar_bits(unsigned char val)
++{
++	int count = 0;
++	int i;
++
++	for (i = 0; i < 8; i++) {
++		if (val & 0x1)
++			count++;
++
++		val = val >> 1;
++	}
++
++	return count;
++}
++
++/**
++ * phytec_i2c_eeprom_get() - EEPROM data collection for PHYTEC SoMs
++ * @bus_addr:	target I2C bus address
++ * @dev_addr:	target I2C device address
++ *
++ * ep in SRAM EEPROM scratch is populated by this function for board
++ * identification and hardware initialization/configuration.
++ */
++int __maybe_unused phytec_i2c_eeprom_get(int bus_addr, int dev_addr);
++
++/**
++ * phytec_i2c_eeprom_set() - EEPROM data write for PHYTEC SoMs
++ * @bus_addr:	target I2C bus address
++ * @dev_addr:	target I2C device address
++ *
++ * Target EEPROM is written to at addr 0x0 from ep. ep header must match
++ * PHYTEC_EEPROM_HEADER_MAGIC or write will not proceed.
++ */
++int __maybe_unused phytec_i2c_eeprom_set(int bus_addr, int dev_addr,
++		struct phytec_common_eeprom *ep);
++
++/**
++ * phytec_i2c_eeprom_compare() - compare PHYTEC-defined eeprom structs
++ * @bus_addr:	target I2C bus address
++ * @dev_addr:	target I2C device address
++ *
++ * Currently-stored EEPROM information it retrieved and compared to EEPROM
++ * struct pointed to by ep.
++ */
++int __maybe_unused phytec_i2c_eeprom_compare(int bus_addr, int dev_addr,
++		struct phytec_common_eeprom *ep);
++
++/**
++ * phytec_board_match() - compare option string with EEPROM data
++ * @opt_str:	string to compare with EEPROM data
++ *
++ * Returns true if opt_str matches EEPROM data, false otherwise.
++ */
++bool __maybe_unused phytec_board_match(char *opt_str);
++
++#endif /* __PHYTEC_EEPROM_H */

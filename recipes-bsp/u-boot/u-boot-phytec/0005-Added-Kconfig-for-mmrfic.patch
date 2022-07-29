@@ -1,0 +1,31 @@
+diff --git a/arch/arm/mach-omap2/omap5/Kconfig b/arch/arm/mach-omap2/omap5/Kconfig
+index fdb9670..246c1d9 100644
+--- a/arch/arm/mach-omap2/omap5/Kconfig
++++ b/arch/arm/mach-omap2/omap5/Kconfig
+@@ -56,6 +56,18 @@ config TARGET_AM57XX_PHYCORE_KIT
+ 	imply SPL_THERMAL
+ 	imply TI_DRA7_THERMAL
+ 
++config TARGET_AM572X_BEL_MMRFIC
++        bool "MMRFIC AM572X-BEL-MMRFIC"
++        select BOARD_LATE_INIT
++        select CMD_DDR3
++        select DRA7XX
++        select PHYS_64BIT
++        imply DM_THERMAL
++        imply SCSI
++        imply SPL_THERMAL
++        imply TI_DRA7_THERMAL
++
++
+ endchoice
+ 
+ config SYS_SOC
+@@ -173,6 +185,7 @@ endif
+ 
+ source "board/compulab/cl-som-am57x/Kconfig"
+ source "board/compulab/cm_t54/Kconfig"
++source "board/mmrfic/am572x_bel_mmrfic/Kconfig"
+ source "board/phytec/am57xx_phycore_kit/Kconfig"
+ source "board/ti/omap5_uevm/Kconfig"
+ source "board/ti/dra7xx/Kconfig"

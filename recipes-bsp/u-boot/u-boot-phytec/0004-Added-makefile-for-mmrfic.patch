@@ -1,0 +1,14 @@
+diff --git a/arch/arm/dts/Makefile b/arch/arm/dts/Makefile
+index ae609c4..cfabe31 100644
+--- a/arch/arm/dts/Makefile
++++ b/arch/arm/dts/Makefile
+@@ -601,6 +601,9 @@ dtb-$(CONFIG_ARCH_MEDIATEK) += \
+ 	mt7623n-bananapi-bpi-r2.dtb \
+ 	mt7629-rfb.dtb
+ 
++dtb-$(CONFIG_TARGET_AM572X_BEL_MMRFIC) += \
++        am572x-bel-mmrfic.dtb
++
+ dtb-$(CONFIG_TARGET_AM65XX_PHYCORE_KIT_A53)	+= k3-am65xx-phycore-kit.dtb
+ dtb-$(CONFIG_TARGET_AM65XX_PHYCORE_KIT_R5)	+= k3-am65xx-phycore-kit-r5.dtb
+ 

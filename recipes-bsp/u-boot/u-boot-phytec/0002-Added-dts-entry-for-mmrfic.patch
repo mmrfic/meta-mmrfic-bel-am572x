@@ -1,0 +1,38 @@
+From f447cbce5ff0480d68c97e53ae335f937e110e87 Mon Sep 17 00:00:00 2001
+From: pratikhyapani <pratikhyapani@zilogic.com>
+Date: Sat, 2 Jul 2022 22:51:18 +0530
+Subject: [PATCH] Added model name and compatible strings for mmrfic board
+
+Signed-off-by: pratikhyapani <pratikhyapani@zilogic.com>
+---
+ arch/arm/dts/am572x-bel-mmrfic.dts | 18 ++++++++++++++++++
+ 1 file changed, 18 insertions(+)
+ create mode 100644 arch/arm/dts/am572x-bel-mmrfic.dts
+
+diff --git a/arch/arm/dts/am572x-bel-mmrfic.dts b/arch/arm/dts/am572x-bel-mmrfic.dts
+new file mode 100644
+index 0000000000..082bac985b
+--- /dev/null
++++ b/arch/arm/dts/am572x-bel-mmrfic.dts
+@@ -0,0 +1,18 @@
++/*
++ * Copyright (C) 2020 PHYTEC America, LLC. - https://www.phytec.com/
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++ * DTS for PHYTEC kit KPCM-057-SYS with phyCORE-AM572x SOM
++ */
++/dts-v1/;
++
++#include "am572x-phycore-som.dtsi"     /* Superset - enables all SOM features */
++#include "am572x-pcm-948.dtsi"         /* Carrier Board */
++
++/ {
++	model = "MMRFIC phyCORE-AM572x Carrier Board";
++	compatible = "phytec,am572x-bel-mmrfic", "phytec,am572x-pcm-948", "phytec,am572x-phycore-som", "ti,am5728", "ti,dra742", "ti,dra74", "ti,dra7";
++};
+-- 
+2.17.1
+
