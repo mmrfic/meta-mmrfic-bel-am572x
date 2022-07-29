@@ -1,0 +1,357 @@
+Index: kernel-source/arch/arm/boot/dts/am572x-bel-mmrfic.dts
+===================================================================
+--- /dev/null
++++ kernel-source/arch/arm/boot/dts/am572x-bel-mmrfic.dts
+@@ -0,0 +1,352 @@
++/*
++ * Copyright (C) 2015 PHYTEC America, LLC. - https://www.phytec.com
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++ * DTS for MMRFIC kit KPCM-057-SYS
++ */
++
++/dts-v1/;
++
++#include "am572x-phycore-som.dtsi"              /* Enables all SOM features */
++#include "am572x-pcm-948.dtsi"                  /* Carrier Board */
++
++#include "am5728-pcm-057-41300111i.dtsi"        /* SOM variant */
++
++/ {
++        model = "MMRFIC phyCORE-AM572x Carrier Board";
++        compatible = "phytec,am572x-bel-mmrfic", "phytec,am572x-pcm-948",
++                     "phytec,am572x-phycore-som", "ti,am5728", "ti,dra742",
++                     "ti,dra74", "ti,dra7";
++};
++
++&mcspi1 {
++        spidev1_0: spidev1@0 {
++                compatible = "rohm,dh2228fv";
++        };
++
++chosen {
++        stdout-path = &uart5; 
++       }; 
++
++	i2c2_pin:i2c {
++                pinctrl-single,pins = <
++                DRA7XX_CORE_IOPAD(0x3808, PIN_INPUT | MUX_MODE0)        /* mmrfic i2c2_scl */
++                DRA7XX_CORE_IOPAD(0x380c, PIN_INPUT | MUX_MODE0)        /* mmrfic i2c2_sda */
++        >;
++        };
++
++	i2c5_pin:i2c {
++                pinctrl-single,pins = <
++                DRA7XX_CORE_IOPAD(0x3450, PIN_INPUT | MUX_MODE0)        /* mmrfic i2c5_scl */
++                DRA7XX_CORE_IOPAD(0x3454, PIN_INPUT | MUX_MODE0)        /* mmrfic i2c5_sda */
++        >;
++        };
++
++	uart1_pin:uart {
++		pinctrl-single,pins = <
++		DRA7XX_CORE_IOPAD(0x3734, PIN_OUTPUT | MUX_MODE3)   /* (C18) mcasp4_aclkx.uart8_rxd */
++                DRA7XX_CORE_IOPAD(0x3738, PIN_OUTPUT | MUX_MODE3)   /* (A21) mcasp4_fsx.uart8_txd */
++                DRA7XX_CORE_IOPAD(0x373c, PIN_OUTPUT | MUX_MODE3)   /* (G16) mcasp4_axr0.uart8_ctsn */
++                DRA7XX_CORE_IOPAD(0x3740, PIN_OUTPUT | MUX_MODE3)   /* (D17) mcasp4_axr1.uart8_rtsn */
++	>;
++	};
++
++	uart2_pin:uart {
++                pinctrl-single,pins = <
++                DRA7XX_CORE_IOPAD(0x3784, PIN_OUTPUT | MUX_MODE2 )   /* (AC7) mmc3_dat0.uart5_rxd */
++                DRA7XX_CORE_IOPAD(0x3788, PIN_OUTPUT | MUX_MODE2 )   /* (AC6) mmc3_dat1.uart5_txd */
++                DRA7XX_CORE_IOPAD(0x3790, PIN_OUTPUT | MUX_MODE2 )   /* (AC3) mmc3_dat3.uart5_rts */
++                DRA7XX_CORE_IOPAD(0x378c, PIN_OUTPUT | MUX_MODE2 )   /* (AA3) mmc3_dat2_uart5_cts */
++
++        >;
++        };
++
++	uart3_pin:uart {
++                pinctrl-single,pins = <
++                DRA7XX_CORE_IOPAD(0x37b8, PIN_INPUT_PULLDOWN | MUX_MODE1)      /* (B21) spi1_cs2.uart4_rxd */
++                DRA7XX_CORE_IOPAD(0x37bc, PIN_INPUT_SLEW | MUX_MODE1)           /* (B20) spi1_cs3.uart4_txd */
++        >;
++        };
++
++	uart4_pin:uart {
++                pinctrl-single,pins = <
++                DRA7XX_CORE_IOPAD(0x34e4, PIN_INPUT_PULLDOWN | MUX_MODE5)      /* (AD9) vin1a_de0.uart7_rxd */
++                DRA7XX_CORE_IOPAD(0x34e8, PIN_INPUT_SLEW | MUX_MODE1)           /* (AF9) vin1a_de0.uart7_txd */
++        >;
++        };
++
++	uart5_pin:uart {
++                pinctrl-single,pins = <
++                DRA7XX_CORE_IOPAD(0x3648, PIN_INPUT_SLEW | MUX_MODE0)   /* (V2) uart3_rxd */
++                DRA7XX_CORE_IOPAD(0x364c, PIN_INPUT_SLEW | MUX_MODE0)   /* (AA4) uart3_txd */
++                /* DRA7XX_CORE_IOPAD(0x37cc, PIN_INPUT_SLEW | MUX_MODE1)*/    /* (B24) spi2_cs0.uart3_rts */
++                /* DRA7XX_CORE_IOPAD(0x37c8, PIN_INPUT_SLEW | MUX_MODE1) */   /* (AA4) spi2_d0.uart3_cts */
++
++        >;
++        };
++
++
++	uart6_pin:uart {
++                pinctrl-single,pins = <
++		DRA7XX_CORE_IOPAD(0x3570, PIN_INPUT_SLEW | MUX_MODE8)   /*  vin2a_d2.uart10_rxd */
++                DRA7XX_CORE_IOPAD(0x3574, PIN_INPUT_SLEW | MUX_MODE8)   /*    vin2a_d3.uart10_txd */
++	>;
++  	};
++
++	uart7_pin:uart {
++		pinctrl-single,pins = <
++		DRA7XX_CORE_IOPAD(0x3744, PIN_OUTPUT | MUX_MODE3 )   /* (AA3) mcasp5_aclkx.uart9_rxd */
++                DRA7XX_CORE_IOPAD(0x3748, PIN_OUTPUT | MUX_MODE3 )   /* (AB9) mcasp5_fsx.uart9_txd */
++	>;
++	};
++
++	gpio2_pin:gpio{
++                pinctrl-single,pins = <
++                DRA7XX_CORE_IOPAD(0x3468, PIN_INPUT_SLEW | MUX_MODE14)   /* (N9) gpmc_a10.gpio2_0 */
++                DRA7XX_CORE_IOPAD(0x346c, PIN_INPUT_SLEW | MUX_MODE14)   /* (P9) gpmc_a11.gpio2_1 */
++                DRA7XX_CORE_IOPAD(0x3474, PIN_INPUT_SLEW | MUX_MODE14)   /* (R3) gpmc_a13.gpio2_3 */
++                DRA7XX_CORE_IOPAD(0x3478, PIN_INPUT_SLEW | MUX_MODE14)   /* (T2) gpmc_a14.gpio2_4 */
++                DRA7XX_CORE_IOPAD(0x347c, PIN_INPUT_SLEW | MUX_MODE14)   /* (U2) gpmc_a15.gpio2_5 */
++                DRA7XX_CORE_IOPAD(0x3480, PIN_INPUT_SLEW | MUX_MODE14)   /* (U1) gpmc_a16.gpio2_6 */
++                DRA7XX_CORE_IOPAD(0x3484, PIN_INPUT_SLEW | MUX_MODE14)   /* (P3) gpmc_a17.gpio2_7 */
++                DRA7XX_CORE_IOPAD(0x3488, PIN_INPUT_SLEW | MUX_MODE14)   /* (R2) gpmc_a18.gpio2_8 */
++                DRA7XX_CORE_IOPAD(0x34b4, PIN_INPUT_SLEW | MUX_MODE14)   /* (T1) gpmc_cs0.gpio2_19 */
++                DRA7XX_CORE_IOPAD(0x34b8, PIN_INPUT_SLEW | MUX_MODE14)   /* (P2) gpmc_cs2.gpio2_20 */
++                DRA7XX_CORE_IOPAD(0x34bc, PIN_INPUT_SLEW | MUX_MODE14)   /* (P1) gpmc_cs3.gpio2_21 */
++                DRA7XX_CORE_IOPAD(0x34c4, PIN_INPUT_SLEW | MUX_MODE14)   /* (N1) gpmc_advn_ale.gpio2_23 */
++                DRA7XX_CORE_IOPAD(0x34c8, PIN_INPUT_SLEW | MUX_MODE14)   /* (M5) gpmc_oen_ren.gpio2_24 */
++                DRA7XX_CORE_IOPAD(0x34cc, PIN_INPUT_SLEW | MUX_MODE14)   /* (M3) gpmc_wen.gpio2_25 */
++                DRA7XX_CORE_IOPAD(0x34d0, PIN_INPUT_SLEW | MUX_MODE14)   /* (N6) gpmc_ben0.gpio2_26 */
++                DRA7XX_CORE_IOPAD(0x34d4, PIN_INPUT_SLEW | MUX_MODE14)   /* (M4) gpmc_ben1.gpio2_27 */
++                DRA7XX_CORE_IOPAD(0x34d8, PIN_INPUT_SLEW | MUX_MODE14)   /* (N2) gpmc_wait0.gpio2_28 */
++                DRA7XX_CORE_IOPAD(0x371c, PIN_INPUT_SLEW | MUX_MODE14)   /* (B17) mcasp2_axr6.gpio2_29 */
++                DRA7XX_CORE_IOPAD(0x34e0, PIN_INPUT_SLEW | MUX_MODE14)   /* (AH7) vin1b_clk1.gpio2_31 */
++
++
++        >;
++        };
++
++	power_reset_pin:power_reset{
++                pinctrl-single,pins = <
++                DRA7XX_CORE_IOPAD(0x3604, PIN_OUTPUT | MUX_MODE14 )   /* (D7) vout1_d10.gpio8_10 */
++
++        >;
++	};
++
++	ambe_vocoder_pin:ambe_vocoder{
++                pinctrl-single,pins = <
++                DRA7XX_CORE_IOPAD(0x36e8, PIN_OUTPUT | MUX_MODE14 )   /* (J7) mcasp1_axr13.gpio6_4 */
++                DRA7XX_CORE_IOPAD(0x3718, PIN_OUTPUT | MUX_MODE14 )   /* (B16) mcasp2_axr5.gpio6_7 */
++                DRA7XX_CORE_IOPAD(0x370c, PIN_OUTPUT | MUX_MODE14 )   /* (C15) mcasp2_axr2.gpio6_8 */
++                DRA7XX_CORE_IOPAD(0x3710, PIN_OUTPUT | MUX_MODE14 )   /* (A16) mcasp2_axr3.gpio6_9 */
++                DRA7XX_CORE_IOPAD(0x3684, PIN_OUTPUT | MUX_MODE14 )   /* (AC10) usb2_drvvbus.gpio6_13 */
++                DRA7XX_CORE_IOPAD(0x3688, PIN_OUTPUT | MUX_MODE14 )   /* (E21) gpio6_14.gpio6_14 */
++                DRA7XX_CORE_IOPAD(0x368c, PIN_OUTPUT | MUX_MODE14 )   /* (F20) gpio6_15.gpio6_15 */
++                DRA7XX_CORE_IOPAD(0x3580, PIN_OUTPUT | MUX_MODE14 )   /* (C1) vin2a_d6.gpio4_7 */
++                DRA7XX_CORE_IOPAD(0x36e4, PIN_OUTPUT | MUX_MODE14 )   /* (E14) mcasp1_axr12.gpio4_18 */
++                DRA7XX_CORE_IOPAD(0x35c8, PIN_OUTPUT | MUX_MODE14 )   /* (D11) vout1_clk.gpio4_19 */
++                DRA7XX_CORE_IOPAD(0x35cc, PIN_OUTPUT | MUX_MODE14 )   /* (B10) vout1_de.gpio4_20 */
++                DRA7XX_CORE_IOPAD(0x3514, PIN_OUTPUT | MUX_MODE14 )   /* (AG4) vin1a_d8.gpio3_12 Need to check */
++                DRA7XX_CORE_IOPAD(0x345c, PIN_OUTPUT | MUX_MODE14 )   /* (P5) gpmc_a7.gpio1_29 */
++                DRA7XX_CORE_IOPAD(0x377c, PIN_OUTPUT | MUX_MODE14 )   /* (AD4) mmc3_clk.gpio6_29 */
++                DRA7XX_CORE_IOPAD(0x3780, PIN_OUTPUT | MUX_MODE14 )   /* (AC4) mmc3_cmd.gpio6_30 */
++                DRA7XX_CORE_IOPAD(0x362c, PIN_OUTPUT | MUX_MODE14 )   /* (C9) vout1_d20.gpio8_20 */
++                DRA7XX_CORE_IOPAD(0x3630, PIN_OUTPUT | MUX_MODE14 )   /* (A9) vout1_d21.gpio8_21 */
++                DRA7XX_CORE_IOPAD(0x3454, PIN_OUTPUT | MUX_MODE14 )   /* (R9) gpmc_a5.gpio1_27 */
++                DRA7XX_CORE_IOPAD(0x3458, PIN_OUTPUT | MUX_MODE14 )   /* (R5) gpmc_a6.gpio1_28 */
++        >;
++	};
++
++	aic_vocoder_gpio:gpio{
++                pinctrl-single,pins = <
++                DRA7XX_CORE_IOPAD(0x381c, PIN_OUTPUT | MUX_MODE14 )   /* (AC17) Wakeup1.gpio1_1  */
++                DRA7XX_CORE_IOPAD(0x3820, PIN_OUTPUT | MUX_MODE14 )   /* (AB16) Wakeup2.gpio1_2  */
++
++        >;
++	};
++
++	gpio8_pin:gpio{
++                pinctrl-single,pins = <
++                DRA7XX_CORE_IOPAD(0x35dc, PIN_INPUT_SLEW | MUX_MODE14)          /* (F11) vout1_d0.gpio8_0 */
++                DRA7XX_CORE_IOPAD(0x35e0, PIN_INPUT_SLEW | MUX_MODE14)          /* (G10) vout1_d1.gpio8_1 */
++                DRA7XX_CORE_IOPAD(0x35e4, PIN_OUTPUT | MUX_MODE14)              /* (F10) vout1_d2.gpio8_2 */
++                DRA7XX_CORE_IOPAD(0x35e8, PIN_INPUT | MUX_MODE14)               /* (G11) vout1_d3.gpio8_3 */
++                DRA7XX_CORE_IOPAD(0x35ec, PIN_OUTPUT | MUX_MODE14)     /* (E9) vout1_d4.gpio8_4 */     
++                DRA7XX_CORE_IOPAD(0x35f0, PIN_INPUT | MUX_MODE14)               /* (F9) vout1_d5.gpio8_5 */
++                DRA7XX_CORE_IOPAD(0x35f4, PIN_INPUT | MUX_MODE14)               /* (F8) vout1_d6.gpio8_6 */
++                DRA7XX_CORE_IOPAD(0x35f8, PIN_OUTPUT | MUX_MODE14)              /* (E7) vout1_d7.gpio8_7 */
++                DRA7XX_CORE_IOPAD(0x35fc, PIN_OUTPUT | MUX_MODE14)              /* (E8) vout1_d7.gpio8_8 */
++                DRA7XX_CORE_IOPAD(0x35f8, PIN_OUTPUT | MUX_MODE14)              /* (E9) vout1_d7.gpio8_7 */
++        >;
++        };
++
++	gpio8_spare:gpio_spare{
++                pinctrl-single,pins = <
++                DRA7XX_CORE_IOPAD(0x3604, PIN_OUTPUT | MUX_MODE14)
++                DRA7XX_CORE_IOPAD(0x3610, PIN_OUTPUT | MUX_MODE14)
++                DRA7XX_CORE_IOPAD(0x3614, PIN_OUTPUT | MUX_MODE14)
++                DRA7XX_CORE_IOPAD(0x3618, PIN_OUTPUT | MUX_MODE14)
++                DRA7XX_CORE_IOPAD(0x35f8, PIN_OUTPUT | MUX_MODE14)
++                DRA7XX_CORE_IOPAD(0x361c, PIN_OUTPUT | MUX_MODE14)
++                DRA7XX_CORE_IOPAD(0x3620, PIN_OUTPUT | MUX_MODE14)
++                DRA7XX_CORE_IOPAD(0x3624, PIN_OUTPUT | MUX_MODE14)
++                DRA7XX_CORE_IOPAD(0x3628, PIN_OUTPUT | MUX_MODE14)
++                DRA7XX_CORE_IOPAD(0x35f8, PIN_OUTPUT | MUX_MODE14)
++                DRA7XX_CORE_IOPAD(0x362c, PIN_OUTPUT | MUX_MODE14)
++        >;
++        };
++
++	clk_spare:clk{
++                pinctrl-single,pins = <
++                DRA7XX_CORE_IOPAD(0x3698, PIN_OUTPUT | MUX_MODE0)      /* (E17) , XREF_CLK1 (Spare) */
++                DRA7XX_CORE_IOPAD(0x369C, PIN_OUTPUT | MUX_MODE0)     /*   (B26)  ,XREF_CLK2 (Spare) */
++                DRA7XX_CORE_IOPAD(0x36A0, PIN_OUTPUT | MUX_MODE0)     /* (C23)   , XREF_CLK3 (Spare) */
++        >;
++        };
++
++	gpmc_pins_sysboot:gpmc{
++                pinctrl-single,pins = <
++                DRA7XX_CORE_IOPAD(0x3420, PIN_OUTPUT | MUX_MODE0)   /* (L1) SYSBOOT8 */
++                DRA7XX_CORE_IOPAD(0x3424, PIN_OUTPUT | MUX_MODE0)   /* (K2)  SYSBOOT9 */
++                DRA7XX_CORE_IOPAD(0x3428, PIN_OUTPUT | MUX_MODE0)   /*(J1)  SYSBOOT10 */
++                DRA7XX_CORE_IOPAD(0x342c, PIN_OUTPUT | MUX_MODE0)    /* (J2) SYSBOOT11 */
++                DRA7XX_CORE_IOPAD(0x3430, PIN_OUTPUT | MUX_MODE0)   /* (H1)  SYSBOOT12 */
++                DRA7XX_CORE_IOPAD(0x3434, PIN_OUTPUT | MUX_MODE0)   /* (J3)  SYSBOOT13 */
++                DRA7XX_CORE_IOPAD(0x3438, PIN_OUTPUT | MUX_MODE0)   /*(H2)  SYSBOOT14 */
++                DRA7XX_CORE_IOPAD(0x343c, PIN_OUTPUT | MUX_MODE0)   /* (H3)  SYSBOOT15 */
++        >;
++        };
++
++
++	LTC_UART:gpio {
++                pinctrl-single,pins = <
++                DRA7XX_CORE_IOPAD(0x3448, PIN_OUTPUT | MUX_MODE14)      /* (T6) gpmc_a2.gpio7_5 */
++                DRA7XX_CORE_IOPAD(0x3470, PIN_OUTPUT | MUX_MODE14)      /* (P4) gpmc_a12.gpio2_2*/
++                DRA7XX_CORE_IOPAD(0x3470, PIN_OUTPUT | MUX_MODE14)      /* (p6) gpmc_a4.gpio2_2 */
++                DRA7XX_CORE_IOPAD(0x3564, PIN_OUTPUT | MUX_MODE14)      /* (G6) GIO4_0 */
++                DRA7XX_CORE_IOPAD(0x3564, PIN_OUTPUT | MUX_MODE14)      /* (G1) GIO3_31 */
++                DRA7XX_CORE_IOPAD(0x37b0, PIN_OUTPUT | MUX_MODE14)      /* GIO7_10 */
++                DRA7XX_CORE_IOPAD(0x37c0, PIN_OUTPUT | MUX_MODE14)      /* gpio7_14 */
++                DRA7XX_CORE_IOPAD(0x37c4, PIN_OUTPUT | MUX_MODE14)      /* gpio7_15 */
++        >;
++        };
++	MISC_GIO:gpio {
++                pinctrl-single,pins = <
++                DRA7XX_CORE_IOPAD(0x3608, PIN_OUTPUT | MUX_MODE14)      /* (D8) GIO8_11 */
++                DRA7XX_CORE_IOPAD(0x360c, PIN_OUTPUT | MUX_MODE14)      /* (A5) LTC2803_GPIO */
++                DRA7XX_CORE_IOPAD(0x3794, PIN_OUTPUT | MUX_MODE14)      /* (AC8) SW2 Input */
++        >;
++        };
++
++	sound: sound0 {
++                compatible = "simple-audio-card";
++                status = "disabled";
++                simple-audio-card,name = "phyCORE-AM57xx-RDK";
++                simple-audio-card,widgets =
++                        "Line", "Line Out",
++                        "Line", "Line In",
++                        "Microphone", "Mic Jack",
++                        "Headphone", "HP Jack";
++                simple-audio-card,routing =
++                        "Line Out",     "LLOUT",
++                        "Line Out",     "RLOUT",
++
++                        "LINE1R",       "Line In",
++                        "LINE1R",       "Line In",
++
++                        "MIC3L",        "Mic Jack",
++                        "MIC3R",        "Mic Jack",
++                        "Mic Jack",     "Mic Bias",
++
++                        "HP Jack",      "HPLOUT",
++                        "HP Jack",      "HPROUT";
++                simple-audio-card,format = "dsp_b";
++                simple-audio-card,bitclock-master = <&sound_master>;
++                simple-audio-card,frame-master = <&sound_master>;
++                simple-audio-card,bitclock-inversion;
++
++                simple-audio-card,cpu {
++                        sound-dai = <&mcasp1>;
++                };
++	};
++};
++
++//&uart1 { 
++//	status = "disabled";
++//	pinctrl-names = "default";
++//	pinctrl-0 = <&uart1_pin>;
++//};
++
++//&uart2 {
++//        status = "disabled";
++//        pinctrl-names = "default";
++//        pinctrl-0 = <&uart2_pin>;
++//};
++
++//&uart3 {
++//        status = "disabled";
++//        pinctrl-names = "default";
++//        pinctrl-0 = <&uart3_pin>;
++//};
++
++//&uart4 {
++//        status = "disabled";
++//        pinctrl-names = "default";
++//        pinctrl-0 = <&uart4_pin>;
++//};
++
++//&uart5 {
++//        status = "okay";
++//        pinctrl-names = "default";
++//        pinctrl-0 = <&uart5_pin>;
++//};
++
++//&uart6 {
++//        status = "disabled";
++//        pinctrl-names = "default";
++//        pinctrl-0 = <&uart6_pin>;
++//};
++
++//&uart7 {
++//        status = "disabled";
++//        pinctrl-names = "default";
++//        pinctrl-0 = <&uart7_pin>;
++//};
++
++//&i2c1 {
++//	tlv320aic3107: tlv320aic3107 {
++//		#sound-dai-cells = <0>;
++//                compatible = "ti,tlv320aic3107";
++//                reg = <0x18>;
++//                pinctrl-names = "default", "sleep";
++//                pinctrl-0 = <&clkout2_pins_default>;
++//                pinctrl-1 = <&clkout2_pins_sleep>;
++//                status = "okay";
++//                ai3x-micbias-vg = <2>;
++//                adc-settle-ms = <40>;
++//
++//                AVDD-supply = <&vdd_3v3>;
++//                IOVDD-supply = <&vdd_3v3>;
++//                DRVDD-supply = <&vdd_3v3>;
++//                DVDD-supply = <&aic_dvdd>;
++//                };
++//
++//};
++//
++&i2c2 {
++        status = "disabled";
++        pinctrl-names = "default";
++        pinctrl-0 = <&i2c2_pin>;
++        clock-frequency = <400000>;
++};
++
++&i2c5 {
++        status = "disabled";
++        pinctrl-names = "default";
++        pinctrl-0 = <&i2c5_pin>;
++        clock-frequency = <400000>;
++};
++

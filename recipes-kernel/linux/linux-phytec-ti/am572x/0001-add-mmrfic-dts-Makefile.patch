@@ -1,0 +1,12 @@
+diff --git a/arch/arm/boot/dts/Makefile b/arch/arm/boot/dts/Makefile
+index da4e7d2ed7ce..4ee9de96568a 100644
+--- a/arch/arm/boot/dts/Makefile
++++ b/arch/arm/boot/dts/Makefile
+@@ -761,6 +761,7 @@ dtb-$(CONFIG_SOC_DRA7XX) += \
+ 	dra71-evm.dtb \
+ 	dra76-evm.dtb \
+ 	am57xx-phycore-kit.dtb \
++	am572x-bel-mmrfic.dtb \
+ 	am57xx-phytec-lcd-018.dtbo \
+ 	am57xx-phytec-vm-009.dtbo \
+ 	am57xx-phytec-vm-011.dtbo \
