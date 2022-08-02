@@ -1,0 +1,32 @@
+require conf/machine/include/dra7xx.inc
+
+SOC_FAMILY_append = ":am57xx"
+
+SERIAL_CONSOLES = "115200;ttyS2"
+
+MULTIMEDIA_remove = "chromium-wayland"
+IMAGE_INSTALL_append = " e2fsprogs-resize2fs phytec-eeprom-flashtool"
+IMAGE_FSTYPES += "ext4 tar.xz"
+
+PREFERRED_PROVIDER_virtual/kernel_${MACHINE} ??= "linux-phytec-ti"
+PREFERRED_PROVIDER_virtual/bootloader_${MACHINE} = "u-boot-phytec"
+PREFERRED_PROVIDER_u-boot_${MACHINE} = "u-boot-phytec"
+
+# Last entry in UBOOT_CONFIG are symlinked to the default MLO and u-boot.img
+UBOOT_CONFIG ?= "am572x_bel_mmrfic"
+
+UBOOT_CONFIG[am572x_bel_mmrfic] = "am572x_bel_mmrfic_config"
+
+CREATE_SRCIPK_pn-linux-phytec-ti ??= "1"
+CREATE_SRCIPK_pn-u-boot-phytec = "1"
+
+# Set this to the platform identifier used in BSP version for localversion
+BSP_BASE_VER = "AM57xx"
+
+# NAND/UBI configuration
+MKUBIFS_ARGS = "-m 4096 -c 4083 -e 258048"
+UBINIZE_ARGS = "-p 256KiB -m 4096 -s 1024"
+
+# Set the list of device targets for ti-pdk class recipes
+TI_PDK_LIMIT_SOCS ?= "am571x am572x am574x"
+TI_PDK_LIMIT_BOARDS ?= "evmAM571x evmAM572x idkAM571x idkAM572x idkAM574x"
