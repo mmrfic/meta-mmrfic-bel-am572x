@@ -1,0 +1,28 @@
+--- a/arch/arm/dts/am572x-bel-mmrfic.dts	2022-12-21 16:12:11.000896971 +0530
++++ b/arch/arm/dts/am572x-bel-mmrfic.dts	2022-12-21 15:28:06.119289578 +0530
+@@ -15,4 +15,25 @@
+ / {
+ 	model = "MMRFIC phyCORE-AM572x Carrier Board";
+ 	compatible = "phytec,am572x-bel-mmrfic", "phytec,am572x-pcm-948", "phytec,am572x-phycore-som", "ti,am5728", "ti,dra742", "ti,dra74", "ti,dra7";
++
++	chosen {
++                stdout-path = &uart3;
++        };
++
+ };
++
++&dra7_pmx_core {
++	uart3_pins_default:uart3_pins_default {
++		pinctrl-single,pins = <
++                DRA7XX_CORE_IOPAD(0x37b8, PIN_INPUT_SLEW | MUX_MODE1)		     /* (B21) spi1_cs2.uart4_rxd */
++                DRA7XX_CORE_IOPAD(0x37bc, PIN_INPUT_SLEW | MUX_MODE1)           /* (B20) spi1_cs3.uart4_txd */
++		>;
++	};
++};
++
++&uart3 {
++	u-boot,dm-spl;
++	status = "okay";
++	pinctrl-names = "default";
++	pinctrl-0 = <&uart3_pins_default>;
++};

@@ -1,8 +1,8 @@
-diff --git a/./board/mmrfic/am572x_bel_mmrfic/Kconfig b/./board/mmrfic/am572x_bel_mmrfic/Kconfig
+diff --git a/board/mmrfic/am572x_bel_mmrfic/Kconfig b/board/mmrfic/am572x_bel_mmrfic/Kconfig
 new file mode 100644
 index 0000000..4283788
 --- /dev/null
-+++ b/./board/mmrfic/am572x_bel_mmrfic/Kconfig
++++ b/board/mmrfic/am572x_bel_mmrfic/Kconfig
 @@ -0,0 +1,36 @@
 +if TARGET_AM572X_BEL_MMRFIC
 +
@@ -22,7 +22,7 @@ index 0000000..4283788
 +	  The phyCORE-AM57x SOM (PCM-057) can be populated with different DDR3
 +	  chips resulting in various configurations and total available memory.
 +
-+      	config PCM_057_128M16_x2_DDR
++	config PCM_057_128M16_x2_DDR
 +		bool "512MiB (2x 128M16)"
 +	config PCM_057_256M16_x2_DDR
 +		bool "1GiB (2x 256M16)"
@@ -40,11 +40,11 @@ index 0000000..4283788
 +source "board/ti/common/Kconfig"
 +
 +endif
-diff --git a/./board/mmrfic/am572x_bel_mmrfic/Makefile b/./board/mmrfic/am572x_bel_mmrfic/Makefile
+diff --git a/board/mmrfic/am572x_bel_mmrfic/Makefile b/board/mmrfic/am572x_bel_mmrfic/Makefile
 new file mode 100644
 index 0000000..5cd6873
 --- /dev/null
-+++ b/./board/mmrfic/am572x_bel_mmrfic/Makefile
++++ b/board/mmrfic/am572x_bel_mmrfic/Makefile
 @@ -0,0 +1,8 @@
 +#
 +# (C) Copyright 2014
@@ -54,12 +54,12 @@ index 0000000..5cd6873
 +#
 +
 +obj-y	:= board.o
-diff --git a/./board/mmrfic/am572x_bel_mmrfic/am572x-bel-mmrfic.its b/./board/mmrfic/am572x_bel_mmrfic/am572x-bel-mmrfic.its
+diff --git a/board/mmrfic/am572x_bel_mmrfic/am572x-bel-mmrfic.its b/board/mmrfic/am572x_bel_mmrfic/am572x-bel-mmrfic.its
 new file mode 100644
 index 0000000..64cb11b
 --- /dev/null
-+++ b/./board/mmrfic/am572x_bel_mmrfic/am572x-bel-mmrfic.its
-@@ -0,0 +1,36 @@
++++ b/board/mmrfic/am572x_bel_mmrfic/am572x-bel-mmrfic.its
+@@ -0,0 +1,35 @@
 +/dts-v1/;
 +
 +/ {
@@ -95,12 +95,11 @@ index 0000000..64cb11b
 +		};
 +	};
 +};
-+
-diff --git a/./board/mmrfic/am572x_bel_mmrfic/board.c b/./board/mmrfic/am572x_bel_mmrfic/board.c
+diff --git a/board/mmrfic/am572x_bel_mmrfic/board.c b/board/mmrfic/am572x_bel_mmrfic/board.c
 new file mode 100644
 index 0000000..5181de5
 --- /dev/null
-+++ b/./board/mmrfic/am572x_bel_mmrfic/board.c
++++ b/board/mmrfic/am572x_bel_mmrfic/board.c
 @@ -0,0 +1,836 @@
 +// SPDX-License-Identifier: GPL-2.0+
 +/*
@@ -938,11 +937,11 @@ index 0000000..5181de5
 +	}
 +}
 +#endif
-diff --git a/./board/mmrfic/am572x_bel_mmrfic/emif_config.h b/./board/mmrfic/am572x_bel_mmrfic/emif_config.h
+diff --git a/board/mmrfic/am572x_bel_mmrfic/emif_config.h b/board/mmrfic/am572x_bel_mmrfic/emif_config.h
 new file mode 100644
 index 0000000..a8748d0
 --- /dev/null
-+++ b/./board/mmrfic/am572x_bel_mmrfic/emif_config.h
++++ b/board/mmrfic/am572x_bel_mmrfic/emif_config.h
 @@ -0,0 +1,229 @@
 +/*
 + * Copyright (C) 2015 PHYTEC America, LLC
@@ -1173,12 +1172,12 @@ index 0000000..a8748d0
 +};
 +
 +#endif /* _EMIF_CONFIG_PCM_057_H_ */
-diff --git a/./board/mmrfic/am572x_bel_mmrfic/mux_data.h b/./board/mmrfic/am572x_bel_mmrfic/mux_data.h
+diff --git a/board/mmrfic/am572x_bel_mmrfic/mux_data.h b/board/mmrfic/am572x_bel_mmrfic/mux_data.h
 new file mode 100644
 index 0000000..b10e26e
 --- /dev/null
-+++ b/./board/mmrfic/am572x_bel_mmrfic/mux_data.h
-@@ -0,0 +1,256 @@
++++ b/board/mmrfic/am572x_bel_mmrfic/mux_data.h
+@@ -0,0 +1,284 @@
 +/*
 + * Copyright (C) 2015 PHYTEC America, LLC
 + * Author: Russell Robinson <rrobinson@phytec.com>
@@ -1224,12 +1223,6 @@ index 0000000..b10e26e
 +	{GPMC_AD5, (M0 | PIN_INPUT_SLEW)}, 			/* gpmc_ad5 */
 +	{GPMC_AD6, (M0 | PIN_INPUT_SLEW)}, 			/* gpmc_ad6 */
 +	{GPMC_AD7, (M0 | PIN_INPUT_SLEW)}, 			/* gpmc_ad7 */
-+	{GPMC_CS0, (M0 | PIN_OUTPUT_PULLUP | SLEWCONTROL)}, 	/* gpmc_cs0 */
-+	{GPMC_ADVN_ALE, (M0 | PIN_OUTPUT | SLEWCONTROL)}, 	/* gpmc_advn_ale */
-+	{GPMC_OEN_REN, (M0 | PIN_OUTPUT | SLEWCONTROL)}, 	/* gpmc_oen_ren */
-+	{GPMC_WEN, (M0 | PIN_OUTPUT | SLEWCONTROL)}, 		/* gpmc_wen */
-+	{GPMC_BEN0, (M0 | PIN_OUTPUT | SLEWCONTROL)}, 		/* gpmc_ben0 */
-+	{GPMC_WAIT0, (M0 | PIN_INPUT)}, 			/* gpmc_wait0 */
 +
 +	/* SDIO (MMC3) */
 +	{MMC3_CLK, (M0 | PIN_INPUT_PULLUP)},  /* mmc3_clk.clk */
@@ -1289,15 +1282,7 @@ index 0000000..b10e26e
 +	{USB2_DRVVBUS, (M0 | PIN_OUTPUT_PULLDOWN)}, /* usb2_drvvbus.usb2_drvvbus */
 +
 +	/* QSPI NOR (QSPI1) */
-+	{GPMC_CS2, (M1 | PIN_OUTPUT | MANUAL_MODE)}, /* gpmc_cs2.qspi1_cs0 */
-+	{GPMC_CS3, (M1 | PIN_OUTPUT | MANUAL_MODE)}, /* gpmc_cs3.qspi1_cs1 */
 +	{GPMC_A3, (M1 | PIN_OUTPUT | MANUAL_MODE)},  /* gpmc_a3.qspi1_cs2 */
-+	{GPMC_A13, (M1 | PIN_INPUT | MANUAL_MODE)},  /* gpmc_a13.qspi1_rtclk */
-+	{GPMC_A18, (M1 | PIN_INPUT | MANUAL_MODE)},  /* gpmc_a18.qspi1_sclk */
-+	{GPMC_A16, (M1 | PIN_INPUT | MANUAL_MODE)},  /* gpmc_a16.qspi1_d0 */
-+	{GPMC_A17, (M1 | PIN_INPUT | MANUAL_MODE)},  /* gpmc_a17.qspi1_d1 */
-+	{GPMC_A15, (M1 | PIN_INPUT | MANUAL_MODE)}, /* gpmc_a15.qspi1_d2 */
-+	{GPMC_A14, (M1 | PIN_INPUT | MANUAL_MODE)}, /* gpmc_a14.qspi1_d3 */
 +
 +
 +	/* LCD display (vout2) */
@@ -1336,11 +1321,6 @@ index 0000000..b10e26e
 +	/* EDT Touch IRQ */
 +	{VOUT1_D22, (M14 | PIN_INPUT_PULLUP)},    /* vout1_d22.gpio8_22 */
 +
-+	/* PCIe PERSTn/PWRGD */
-+	{VOUT1_D4, (M14 | PIN_INPUT_PULLDOWN)}, /* vout1_d4.gpio8_4 */
-+	/* PCIe (U28-OE) */
-+	{VOUT1_D7, (M14 | PIN_INPUT_PULLUP)},   /* vout1_d7.gpio8_7 */
-+
 +	/* VTT_EN */
 +	{VIN2A_D7, (M14 | PIN_OUTPUT)}, /* vin2a_d7.gpio4_8 */
 +
@@ -1352,6 +1332,53 @@ index 0000000..b10e26e
 +	{NMIN_DSP, (M0 | PIN_INPUT)}, /* nmin_dsp.nmin_dsp */
 +	{RSTOUTN, (M0 | PIN_OUTPUT)}, /* rstoutn.rstoutn */
 +
++	{GPMC_A10, (M14 | PIN_INPUT_PULLDOWN)},	/* gpmc_a10.gpio2_0 */
++	{GPMC_A11, (M14 | PIN_INPUT_PULLDOWN)},	/* gpmc_a11.gpio2_1 */
++	{GPMC_A13, (M14 | PIN_INPUT_PULLDOWN)},	/* gpmc_a13.gpio2_3 */
++	{GPMC_A14, (M14 | PIN_INPUT_PULLDOWN)},	/* gpmc_a14.gpio2_4 */
++	{GPMC_A15, (M14 | PIN_INPUT_PULLDOWN)},	/* gpmc_a15.gpio2_5 */
++	{GPMC_A16, (M14 | PIN_INPUT_PULLDOWN)},	/* gpmc_a16.gpio2_6 */
++	{GPMC_A17, (M14 | PIN_INPUT_PULLDOWN)},	/* gpmc_a17.gpio2_7 */
++	{GPMC_A18, (M14 | PIN_INPUT_PULLDOWN)},	/* gpmc_a18.gpio2_8 */
++	{GPMC_CS2, (M14 | PIN_INPUT_PULLDOWN)},	/* gpmc_cs2.gpio2_20 */
++
++	{VOUT1_D2, (M14 | PIN_INPUT_PULLDOWN)},	/* vout1_d2.gpio8_2 */
++	{VOUT1_D3, (M14 | PIN_INPUT_PULLDOWN)},	/* vout1_d3.gpio8_3 */
++	{VOUT1_D4, (M14 | PIN_INPUT_PULLDOWN)},	/* vout1_d4.gpio8_4 */
++	{VOUT1_D5, (M14 | PIN_INPUT_PULLDOWN)},	/* vout1_d5.gpio8_5 */
++	{VOUT1_D6, (M14 | PIN_INPUT_PULLDOWN)},	/* vout1_d6.gpio8_6 */
++	{VOUT1_D7, (M14 | PIN_INPUT_PULLDOWN)},	/* vout1_d7.gpio8_7 */
++	{VOUT1_D8, (M14 | PIN_INPUT_PULLDOWN)},	/* vout1_d8.gpio8_8 */
++	{VOUT1_D9, (M14 | PIN_INPUT_PULLDOWN)},	/* vout1_d9.gpio8_9 */
++	{VOUT1_D10, (M14 | PIN_INPUT_PULLDOWN)}, /* vout1_d10.gpio8_10 */
++	{VOUT1_D13, (M14 | PIN_INPUT_PULLDOWN)}, /* vout1_d13.gpio8_13 */
++	{VOUT1_D14, (M14 | PIN_INPUT_PULLDOWN)}, /* vout1_d14.gpio8_14 */
++	{VOUT1_D15, (M14 | PIN_INPUT_PULLDOWN)}, /* vout1_d15.gpio8_15 */
++	{VOUT1_D16, (M14 | PIN_INPUT_PULLDOWN)}, /* vout1_d16.gpio8_16 */
++	{VOUT1_D17, (M14 | PIN_INPUT_PULLDOWN)}, /* vout1_d17.gpio8_17 */
++	{VOUT1_D18, (M14 | PIN_INPUT_PULLDOWN)}, /* vout1_d18.gpio8_18 */
++	{VOUT1_D19, (M14 | PIN_INPUT_PULLDOWN)}, /* vout1_d19.gpio8_19 */
++	{VOUT1_D20, (M14 | PIN_INPUT_PULLDOWN)}, /* vout1_d20.gpio8_20 */
++
++	{MCASP1_AXR8, (M3 | PIN_OUTPUT_PULLUP | SLEWCONTROL)},	/* mcasp1_axr8.spi3_sclk */
++	{MCASP1_AXR9, (M3 | PIN_OUTPUT_PULLUP | SLEWCONTROL)},	/* mcasp1_axr9.spi3_d1 */
++	{MCASP1_AXR10, (M3 | PIN_OUTPUT_PULLUP | SLEWCONTROL)},	/* mcasp1_axr10.spi3_d0 */
++	{MCASP1_AXR11, (M3 | PIN_OUTPUT_PULLUP | SLEWCONTROL)},	/* mcasp1_axr11.spi3_cs0 */
++
++	{SPI1_SCLK, (M0 | PIN_OUTPUT)},	/* spi1_sclk.spi1_sclk */
++	{SPI1_D1, (M0 | PIN_OUTPUT)},	/* spi1_d1.spi1_d1 */
++	{SPI1_D0, (M0 | PIN_OUTPUT)},	/* spi1_d0.spi1_d0 */
++	{SPI1_CS1, (M0 | PIN_OUTPUT)},	/* spi1_cs1.spi1_cs1 */
++
++	{GPMC_CS0, (M14 | PIN_INPUT_PULLDOWN)}, /* gpmc_cs0.gpio2_19 */
++	{GPMC_CS3, (M14 | PIN_INPUT_PULLDOWN)}, /* gpmc_cs3.gpio2_21 */
++	{GPMC_ADVN_ALE, (M14 | PIN_INPUT_PULLDOWN)}, /* gpmc_advn_ale.gpio2_23 */
++	{GPMC_OEN_REN, (M14 | PIN_INPUT_PULLDOWN)}, /* gpmc_oen_ren.gpio2_24 */
++	{GPMC_WEN, (M14 | PIN_INPUT_PULLDOWN)}, /* gpmc_wen.gpio2_25 */
++	{GPMC_BEN0, (M14 | PIN_INPUT_PULLDOWN)}, /* gpmc_ben0.gpio2_26 */
++	{GPMC_BEN1, (M14 | PIN_INPUT_PULLDOWN)}, /* gpmc_ben1.gpio2_27 */
++	{GPMC_WAIT0, (M14 | PIN_INPUT_PULLDOWN)}, /* gpmc_wait0.gpio2_28 */
++	{VIN1B_CLK1, (M14 | PIN_INPUT_PULLDOWN)}, /* vin1b_clk1.gpio2_31 */
 +};
 +
 +const struct pad_conf_entry early_padconf[] = {
@@ -1435,11 +1462,11 @@ index 0000000..b10e26e
 +#endif
 +
 +#endif /* _MUX_DATA_PCM057_H_ */
-diff --git a/./board/mmrfic/common/Kconfig b/./board/mmrfic/common/Kconfig
+diff --git a/board/mmrfic/common/Kconfig b/board/mmrfic/common/Kconfig
 new file mode 100644
 index 0000000..7496e7d
 --- /dev/null
-+++ b/./board/mmrfic/common/Kconfig
++++ b/board/mmrfic/common/Kconfig
 @@ -0,0 +1,38 @@
 +config PHYTEC_EEPROM
 +	bool "Support for EEPROM-based board detection for PHYTEC platforms"
@@ -1479,11 +1506,11 @@ index 0000000..7496e7d
 +config PHYTEC_NAND
 +	bool "Support for NAND on PHYTEC platforms"
 +	default n
-diff --git a/./board/mmrfic/common/Makefile b/./board/mmrfic/common/Makefile
+diff --git a/board/mmrfic/common/Makefile b/board/mmrfic/common/Makefile
 new file mode 100644
 index 0000000..7a1c7ea
 --- /dev/null
-+++ b/./board/mmrfic/common/Makefile
++++ b/board/mmrfic/common/Makefile
 @@ -0,0 +1,7 @@
 +#
 +# Copyright (C) 2017 PHYTEC America, LLC
@@ -1492,11 +1519,11 @@ index 0000000..7a1c7ea
 +#
 +
 +obj-${CONFIG_PHYTEC_EEPROM}	+= phytec_eeprom.o
-diff --git a/./board/mmrfic/common/env_locations.h b/./board/mmrfic/common/env_locations.h
+diff --git a/board/mmrfic/common/env_locations.h b/board/mmrfic/common/env_locations.h
 new file mode 100644
 index 0000000..de66cbe
 --- /dev/null
-+++ b/./board/mmrfic/common/env_locations.h
++++ b/board/mmrfic/common/env_locations.h
 @@ -0,0 +1,88 @@
 +/*
 + * Copyright (C) 2019 PHYTEC America, LLC
@@ -1586,11 +1613,11 @@ index 0000000..de66cbe
 +};
 +
 +#endif /* _ENV_LOCATIONS_PHYTEC_H_ */
-diff --git a/./board/mmrfic/common/phytec_eeprom.c b/./board/mmrfic/common/phytec_eeprom.c
+diff --git a/board/mmrfic/common/phytec_eeprom.c b/board/mmrfic/common/phytec_eeprom.c
 new file mode 100644
 index 0000000..f85094b
 --- /dev/null
-+++ b/./board/mmrfic/common/phytec_eeprom.c
++++ b/board/mmrfic/common/phytec_eeprom.c
 @@ -0,0 +1,284 @@
 +/*
 + * Copyright (C) 2017 PHYTEC America, LLC
@@ -1876,11 +1903,11 @@ index 0000000..f85094b
 +
 +	return !strncmp((char *)ep->kit_opt, (char *)opt_str, cfg_len);
 +}
-diff --git a/./board/mmrfic/common/phytec_eeprom.h b/./board/mmrfic/common/phytec_eeprom.h
+diff --git a/board/mmrfic/common/phytec_eeprom.h b/board/mmrfic/common/phytec_eeprom.h
 new file mode 100644
 index 0000000..3396d76
 --- /dev/null
-+++ b/./board/mmrfic/common/phytec_eeprom.h
++++ b/board/mmrfic/common/phytec_eeprom.h
 @@ -0,0 +1,114 @@
 +/*
 + * Copyright (C) 2017 PHYTEC America, LLC

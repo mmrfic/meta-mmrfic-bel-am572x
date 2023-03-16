@@ -7,4 +7,5 @@ SRC_URI += " \
 	file://0004-Added-makefile-for-mmrfic.patch 	\
 	file://0005-Added-Kconfig-for-mmrfic.patch 	\
 	file://0006-board-changes-for-mmrfic.patch  	\
+	file://0007-dts-patch-for-mmrfic.patch		\
 "

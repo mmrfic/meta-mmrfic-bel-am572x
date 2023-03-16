@@ -1,0 +1,9 @@
+[Unit]
+Description=Programming the PLL
+
+[Service]
+# I2C 1 pin is mapped to CLK_GEN_PLL
+ExecStart=/usr/bin/pll-startup /dev/i2c-1
+
+[Install]
+WantedBy=multi-user.target

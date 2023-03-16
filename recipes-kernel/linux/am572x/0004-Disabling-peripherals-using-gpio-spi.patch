@@ -1,0 +1,25 @@
+diff --git a/arch/arm/boot/dts/am57xx-pcm-948-common.dtsi b/arch/arm/boot/dts/am57xx-pcm-948-common.dtsi
+index 1a7310e..f227cc7 100644
+--- a/arch/arm/boot/dts/am57xx-pcm-948-common.dtsi
++++ b/arch/arm/boot/dts/am57xx-pcm-948-common.dtsi
+@@ -800,7 +800,7 @@
+ };
+
+ &pcie1_rc {
+-	status = "okay";
++	status = "disabled";
+ 	pinctrl-names = "default";
+ 	pinctrl-0 = <&pcie1_pins>;
+
+diff --git a/arch/arm/boot/dts/am57xx-phycore-common.dtsi b/arch/arm/boot/dts/am57xx-phycore-common.dtsi
+index 42d8698..530b87b 100644
+--- a/arch/arm/boot/dts/am57xx-phycore-common.dtsi
++++ b/arch/arm/boot/dts/am57xx-phycore-common.dtsi
+@@ -556,7 +556,7 @@
+ };
+
+ &mcspi1 {
+-	status = "okay";
++	status = "disabled";
+ 	pinctrl-names = "default";
+ 	pinctrl-0 = <&mcspi1_pins_default>;
