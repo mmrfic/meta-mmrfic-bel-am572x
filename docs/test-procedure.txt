@@ -1,0 +1,1807 @@
+= Test Procedure
+
+== Initial test set up
+
+* AM572X-BEL-MMRFIC board
+* SD card with image
+
+== TST001 Verify whether board is booting properly after powered up
+
+=== Procedure
+
+* Provide power supply to phytec carrier board and press power button for booting
+* Check whether it is booting correctly or struck anywhere
+
+=== Expected result
+
+* Board should be booted successfully
+
+== TST002 Verify whether board is rebooting properly after Reset Button pressed
+
+=== Procedure
+
+* Press the Reset Button when Board is in Running
+* Check whether it is rebooting properly or struck anywhere
+
+=== Expected result
+
+* Board should be rebooted successfully
+
+== TST003 Verify the consistency of booting when power cycle a Device multiple times
+
+=== Procedure
+
+* Plug the power cable and press the power button check the board is booting properly
+* Unplug and plug the power button for multiple times and check the board is properly booting
+
+=== Expected result
+
+* The board should boot successfully for multiple times also
+
+== TST004 Check release version
+
+=== Procedure
+
+* We can check the release version by using the below command
+
+-----
+$ cat /etc/os-release.
+-----
+
+=== Expected result
+
+------
+ID="arago"
+NAME="Arago"
+VERSION="2019.11"
+VERSION_ID="2019.11"
+PRETTY_NAME="Arago 2019.11"
+------
+
+== TST005 Check the U-boot software version
+
+=== Procedure
+
+* After booting the board at the initial stage of the boot log we can check the version of U-Boot
+
+=== Expected result
+
+------
+U-Boot 2019.01-gdf704de-BSP-Yocto-TISDK-AM57xx-PD20.1.2-dirty (Jul 19 2022 - 09:20:58 +0000)
+------
+
+== TST006 Check the Kernel version
+
+=== procedure
+
+* After completion of booting process we can check kernel version
+
+------
+$ uname -r
+------
+
+=== Expected result
+
+* Kernel version should be displayed
+
+== TST007 Verify the total RAM size
+
+=== Procedure
+
+* We can Check ram size by using command
+
+-----
+$ cat /proc/meminfo
+-----
+
+=== Expected result
+
+------
+ MemTotal:        1847828 kB
+ MemFree:         1614256 kB
+ MemAvailable:    1741080 kB
+ Buffers:           12792 kB
+ Cached:           133992 kB
+ SwapCached:            0 kB
+ Active:            46652 kB
+ Inactive:         117928 kB
+ Active(anon):      19176 kB
+ Inactive(anon):     9028 kB
+ Active(file):      27476 kB
+ Inactive(file):   108900 kB
+ Unevictable:           0 kB
+ Mlocked:               0 kB
+ HighTotal:       1291264 kB
+ HighFree:        1131312 kB
+ LowTotal:         556564 kB
+ LowFree:          482944 kB
+ SwapTotal:             0 kB
+ SwapFree:              0 kB
+ Dirty:                 0 kB
+ Writeback:             0 kB
+ AnonPages:         17832 kB
+ Mapped:            26532 kB
+ Shmem:             10400 kB
+ Slab:              38532 kB
+ SReclaimable:      15020 kB
+ SUnreclaim:        23512 kB
+ KernelStack:        1072 kB
+ PageTables:         1224 kB
+ NFS_Unstable:          0 kB
+ Bounce:                0 kB
+ WritebackTmp:          0 kB
+ CommitLimit:      923912 kB
+ Committed_AS:     202984 kB
+ VmallocTotal:     245760 kB
+ VmallocUsed:           0 kB
+ VmallocChunk:          0 kB
+ Percpu:              312 kB
+ CmaTotal:         188416 kB
+ CmaFree:          175148 kB
+------
+
+== TST008 Verify the available RAM space size
+
+=== Procedure
+
+* we can check the available RAM size by using the command
+
+-----
+$ cat /proc/meminfo
+-----
+
+=== Expected result
+
+------
+ MemTotal:        1847828 kB
+ MemFree:         1614256 kB
+ MemAvailable:    1741080 kB
+ Buffers:           12792 kB
+ Cached:           133992 kB
+ SwapCached:            0 kB
+ Active:            46652 kB
+ Inactive:         117928 kB
+ Active(anon):      19176 kB
+ Inactive(anon):     9028 kB
+ Active(file):      27476 kB
+ Inactive(file):   108900 kB
+ Unevictable:           0 kB
+ Mlocked:               0 kB
+ HighTotal:       1291264 kB
+ HighFree:        1131312 kB
+ LowTotal:         556564 kB
+ LowFree:          482944 kB
+ SwapTotal:             0 kB
+ SwapFree:              0 kB
+ Dirty:                 0 kB
+ Writeback:             0 kB
+ AnonPages:         17832 kB
+ Mapped:            26532 kB
+ Shmem:             10400 kB
+ Slab:              38532 kB
+ SReclaimable:      15020 kB
+ SUnreclaim:        23512 kB
+ KernelStack:        1072 kB
+ PageTables:         1224 kB
+ NFS_Unstable:          0 kB
+ Bounce:                0 kB
+ WritebackTmp:          0 kB
+ CommitLimit:      923912 kB
+ Committed_AS:     202984 kB
+ VmallocTotal:     245760 kB
+ VmallocUsed:           0 kB
+ VmallocChunk:          0 kB
+ Percpu:              312 kB
+ CmaTotal:         188416 kB
+ CmaFree:          175148 kB
+------
+
+== TST009 Verify the total Storage size
+
+=== Procedure
+
+* we can check the total storage size by using the below command
+
+-----
+$ df -h
+-----
+
+=== Expected result
+
+------
+ Filesystem                Size      Used Available Use% Mounted on
+ /dev/root                 7.2G      6.7G    107.4M  98% /
+ devtmpfs                809.3M      4.0K    809.3M   0% /dev
+ tmpfs                   902.3M      8.0K    902.3M   0% /dev/shm
+ tmpfs                   902.3M      9.5M    892.7M   1% /run
+ tmpfs                   902.3M         0    902.3M   0% /sys/fs/cgroup
+ tmpfs                   902.3M    608.0K    901.7M   0% /tmp
+ tmpfs                    16.0M         0     16.0M   0% /media/ram
+ tmpfs                    50.0M     16.0K     50.0M   0% /var/volatile
+ /dev/mmcblk0p1            4.0M    770.0K      3.2M  19% /run/media/mmcblk0p1
+ /dev/mmcblk1p2            2.2G      1.8G    209.9M  90% /run/media/mmcblk1p2
+ tmpfs                   180.4M         0    180.4M   0% /run/user/0
+------
+
+== TST010 Verify the Available Storage size
+
+=== Procedure
+
+* we can check the available storage size by using the below command
+
+-----
+$ df -h
+-----
+
+=== Expected result
+
+------
+ Filesystem                Size      Used Available Use% Mounted on
+ /dev/root                 7.2G      6.7G    107.4M  98% /
+ devtmpfs                809.3M      4.0K    809.3M   0% /dev
+ tmpfs                   902.3M      8.0K    902.3M   0% /dev/shm
+ tmpfs                   902.3M      9.5M    892.7M   1% /run
+ tmpfs                   902.3M         0    902.3M   0% /sys/fs/cgroup
+ tmpfs                   902.3M    608.0K    901.7M   0% /tmp
+ tmpfs                    16.0M         0     16.0M   0% /media/ram
+ tmpfs                    50.0M     16.0K     50.0M   0% /var/volatile
+ /dev/mmcblk0p1            4.0M    770.0K      3.2M  19% /run/media/mmcblk0p1
+ /dev/mmcblk1p2            2.2G      1.8G    209.9M  90% /run/media/mmcblk1p2
+ tmpfs                   180.4M         0    180.4M   0% /run/user/0
+------
+
+== TST011 Verify the SOC Name and number of core
+
+=== Procedure
+
+* By using the below command we can check the SOC name and number of core
+
+-----
+$ cat /proc/cpuinfo
+-----
+
+=== Expected result
+
+------
+  processor       : 0
+  model name      : ARMv7 Processor rev 2 (v7l)
+  BogoMIPS        : 12.29
+  Features        : half thumb fastmult vfp edsp neon vfpv3 tls vfpv4 idiva idivt vfpd32 lpae evtstrm
+  CPU implementer : 0x41
+  CPU architecture: 7
+  CPU variant     : 0x2
+  CPU part        : 0xc0f
+  CPU revision    : 2
+
+  processor       : 1
+  model name      : ARMv7 Processor rev 2 (v7l)
+  BogoMIPS        : 12.29
+  Features        : half thumb fastmult vfp edsp neon vfpv3 tls vfpv4 idiva idivt vfpd32 lpae evtstrm
+  CPU implementer : 0x41
+  CPU architecture: 7
+  CPU variant     : 0x2
+  CPU part        : 0xc0f
+  CPU revision    : 2
+  Hardware        : Generic DRA74X (Flattened Device Tree)
+  Revision        : 0000
+  Serial          : 0b01400e64fa0922
+------
+
+== TST012 Verify the architecture of SOC
+
+=== Procedure
+
+* we can find the architecture of SOC by using the below command
+
+-----
+$ uname -m
+-----
+
+=== Expected result
+
+------
+armv7l
+------
+
+== TST013 Verify whether Ethernet ports are detected
+
+=== preconditions
+
+* AM572X-BEL-MMRFIC board
+* SD card
+* Ethernet ports is to be enabled
+
+=== Procedure
+
+* Connecting ethernet port and pc through ethernet cable we can find whether ethernet ports are detected by using the below commands
+
+-----
+$ ethtool eth0
+-----
+or
+
+-----
+$ ethtool eth1
+-----
+
+=== Expected result
+
+------
+ Settings for eth1:
+        Supported ports: [ TP MII ]
+        Supported link modes:   10baseT/Half 10baseT/Full
+                                100baseT/Half 100baseT/Full
+                                1000baseT/Half 1000baseT/Full
+        Supported pause frame use: Symmetric Receive-only
+        Supports auto-negotiation: Yes
+        Supported FEC modes: Not reported
+        Advertised link modes:  10baseT/Half 10baseT/Full
+                                100baseT/Half 100baseT/Full
+                                1000baseT/Half 1000baseT/Full
+        Advertised pause frame use: No
+        Advertised auto-negotiation: Yes
+        Advertised FEC modes: Not reported
+        Link partner advertised link modes:  10baseT/Half 10baseT/Full
+                                             100baseT/Half 100baseT/Full
+                                             1000baseT/Full
+        Link partner advertised pause frame use: No
+        Link partner advertised auto-negotiation: Yes
+        Link partner advertised FEC modes: Not reported
+        Speed: 1000Mb/s
+        Duplex: Full
+        Port: MII
+        PHYAD: 2
+        Transceiver: internal
+        Auto-negotiation: on
+        Supports Wake-on: d
+        Wake-on: d
+        Current message level: 0x00000000 (0)
+        Link detected: yes
+
+ Settings for eth0:
+        Supported ports: [ TP MII ]
+        Supported link modes:   10baseT/Half 10baseT/Full
+                                100baseT/Half 100baseT/Full
+                                1000baseT/Half 1000baseT/Full
+        Supported pause frame use: Symmetric Receive-only
+        Supports auto-negotiation: Yes
+        Supported FEC modes: Not reported
+        Advertised link modes:  10baseT/Half 10baseT/Full
+                                100baseT/Half 100baseT/Full
+                                1000baseT/Half 1000baseT/Full
+        Advertised pause frame use: No
+        Advertised auto-negotiation: Yes
+        Advertised FEC modes: Not reported
+        Speed: 10Mb/s
+        Duplex: Half
+        Port: MII
+        PHYAD: 1
+        Transceiver: internal
+        Auto-negotiation: on
+        Supports Wake-on: d
+        Wake-on: d
+        Current message level: 0x00000000 (0)
+        Link detected: no
+------
+
+== TST014 Verify LAN Ethernet port is getting ip address when it is connected to LAN
+
+=== preconditions
+
+* AM572X-BEL-MMRFIC board
+* SD card
+* Ethernet ports is to be enabled
+
+=== Procedure
+
+* Connect ethernet port in phytec board and check whether the port is getting ip address from WAN by using the command
+
+-----
+$ ifconfig
+-----
+
+=== Expected result
+
+------
+ eth0      Link encap:Ethernet  HWaddr 50:51:A9:92:C8:92
+          inet addr:10.42.0.27  Bcast:10.42.0.255  Mask:255.255.255.0
+          inet6 addr: fe80::5251:a9ff:fe92:c892/64 Scope:Link
+          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+          RX packets:163 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:148 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:1000
+          RX bytes:37147 (36.2 KiB)  TX bytes:26487 (25.8 KiB)
+          Interrupt:98
+
+ eth1      Link encap:Ethernet  HWaddr 50:51:A9:92:C8:93
+          inet6 addr: fe80::5251:a9ff:fe92:c893/64 Scope:Link
+          UP BROADCAST MULTICAST  MTU:1500  Metric:1
+          RX packets:32 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:69 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:1000
+          RX bytes:7737 (7.5 KiB)  TX bytes:11460 (11.1 KiB)
+
+ lo        Link encap:Local Loopback
+          inet addr:127.0.0.1  Mask:255.0.0.0
+          inet6 addr: ::1/128 Scope:Host
+          UP LOOPBACK RUNNING  MTU:65536  Metric:1
+          RX packets:2 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:2 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:1000
+          RX bytes:140 (140.0 B)  TX bytes:140 (140.0 B)
+------
+
+== TST015 Verify the GPIO pins are populated in sysfs
+
+=== Preconditions
+
+* AM572X-BEL-MMRFIC board
+* SD card
+* GPIO pins is to be enabled
+
+=== Procedure
+
+* Go to /sys/bus and check whether the GPIO pins are enabled.
+
+=== Expected result
+
+------
+  cec           gpio          mmc           rpmsg         spmi
+   clockevents   hid           mmc_rpmb      scsi          usb
+   clocksource   i2c           nvmem         sdio          usb-serial
+   container     iio           pci           serial        virtio
+   cpu           mdio_bus      pci-epf       serio         w1
+   edac          media         pci_express   soc           workqueue
+   event_source  mipi-dsi      platform      spi
+------
+
+== TST016 Verify whether UART ports are Detected
+
+=== Preconditions
+
+* AM572X-BEL-MMRFIC board
+* SD card
+* UART Image is to be flashed
+
+=== Procedure
+
+* Go to /sys/class/ and check whether UART is detecting or not.
+* ls /sys/class/tty/tty*
+
+=== Expected result
+
+------
+ttys0:
+dev        power      subsystem  uevent
+
+ttys1:
+dev        power      subsystem  uevent
+
+ttys2:
+dev        power      subsystem  uevent
+
+ttys3:
+dev        power      subsystem  uevent
+
+ttys4:
+dev        power      subsystem  uevent
+
+ttys5:
+dev        power      subsystem  uevent
+
+ttys6:
+dev        power      subsystem  uevent
+
+ttys7:
+dev        power      subsystem  uevent
+
+ttys8:
+dev        power      subsystem  uevent
+
+ttys9:
+dev        power      subsystem  uevent
+
+ttysa:
+dev        power      subsystem  uevent
+
+ttysb:
+dev        power      subsystem  uevent
+
+ttysc:
+dev        power      subsystem  uevent
+
+ttysd:
+dev        power      subsystem  uevent
+
+ttyse:
+dev        power      subsystem  uevent
+
+ttysf:
+dev        power      subsystem  uevent
+------
+
+== TST017 Verify whether $(n) UART ports are detected
+
+=== Precondition
+
+* AM572X-BEL-MMRFIC board
+* SD card with image
+
+=== Procedure
+
+* Check the UART ports are detected using below command
+
+------
+ $ ls /dev/ttyS*
+------
+
+=== Expected result
+
+* Number of UART ports detected should be 7
+
+------
+/dev/ttyS0  /dev/ttyS1  /dev/ttyS2  /dev/ttyS3  /dev/ttyS4  /dev/ttyS5  /dev/ttyS6  /dev/ttyS7  /dev/ttyS8  /dev/ttyS9
+------
+
+== TST018 Verify whether $(n) I2C ports are detected
+
+=== Precondition
+
+* AM572X-BEL-MMRFIC board
+* SD card with image
+
+=== Procedure
+
+* Check the I2C ports are detected using below command
+
+------
+$ ls /dev/i2c-*
+------
+
+=== Expected result
+
+*  Number of I2C ports detected should be 5
+
+------
+/dev/i2c-0  /dev/i2c-2  /dev/i2c-3
+------
+
+== TST019 Verify Scanning of slave devices in I2C buses
+
+=== Precondition
+
+* AM572X-BEL-MMRFIC board
+* SD card with image
+
+=== Procedure
+
+* Run i2cdetect command to scan the slave devices connected to i2c bus
+* You will need to specify <busno> as the i2c port number
+------
+$ i2cdetect -y <busno>
+------
+
+=== Expected result
+
+* It should output a table of the currently detected I2C devices
+
+------
+root@am572x-bel-mmrfic:~# i2cdetect -y 0
+Warning: Can't use SMBus Quick Write command, will skip some addresses
+     0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f
+00:
+10:
+20:
+30: -- -- -- -- -- -- -- --
+40:
+50: UU -- -- -- -- -- -- -- UU UU UU 5b -- -- -- --
+60:
+70:
+------
+
+------
+root@am572x-bel-mmrfic:~# i2cdetect -y 2
+Warning: Can't use SMBus Quick Write command, will skip some addresses
+     0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f
+00:
+10:
+20:
+30: -- -- -- -- -- -- -- --
+40:
+50: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+60:
+70:
+------
+
+------
+root@am572x-bel-mmrfic:~# i2cdetect -y 3
+Warning: Can't use SMBus Quick Write command, will skip some addresses
+     0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f
+00:
+10:
+20:
+30: -- -- -- -- -- -- -- --
+40:
+50: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+60:
+70:
+------
+
+== TST020 Verify whether $(n) SPI ports are detected
+
+=== Precondition
+
+* AM572X-BEL-MMRFIC board
+* SD card with image
+
+=== Procedure
+
+* Check the SPI ports are detected using below command
+
+------
+$ ls  /dev/spi*
+------
+
+=== Expected result
+
+* Number of SPI ports detected should be 2
+
+------
+/dev/spidev1.0
+/dev/spidev1.1
+------
+
+== TST021 Verify whether $(n) USB ports are detected
+
+=== Precondition
+
+* AM572X-BEL-MMRFIC board
+* SD card with image
+
+=== Procedure
+
+* Check the USB ports are detected using below command
+
+------
+$ lsusb
+------
+
+=== Expected result
+
+------
+Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+Bus 002 Device 001: ID 1d6b:0003 Linux Foundation 3.0 root hub
+------
+
+== TST022 Verify whether USB slave device is detected
+
+=== Precondition
+
+* AM572X-BEL-MMRFIC board
+* SD card with image
+* Pendrive
+
+=== Procedure
+
+* Connect the pendrive in USB port 1 of board
+* Check the dmesg log to verify whether pendrive is detected in USB port 1
+
+=== Expected result
+
+* Pendrive should be detected in USB port 1
+
+------
+root@am572x-bel-mmrfic:~# [ 3975.978165] usb 2-1: new SuperSpeed Gen 1 USB device number 2 using xhci-hcd
+[ 3976.009065] usb 2-1: New USB device found, idVendor=0781, idProduct=5581, bcdDevice= 1.00
+[ 3976.017285] usb 2-1: New USB device strings: Mfr=1, Product=2, SerialNumber=3
+[ 3976.025121] usb 2-1: Product: Ultra
+[ 3976.028976] usb 2-1: Manufacturer: SanDisk
+[ 3976.033093] usb 2-1: SerialNumber: 4C531003560526109191
+[ 3976.129677] usb-storage 2-1:1.0: USB Mass Storage device detected
+[ 3976.136532] scsi host1: usb-storage 2-1:1.0
+[ 3976.142295] usbcore: registered new interface driver usb-storage
+[ 3976.152572] usbcore: registered new interface driver uas
+[ 3977.199035] scsi 1:0:0:0: Direct-Access     SanDisk  Ultra            1.00 PQ: 0 ANSI: 6
+[ 3977.226311] sd 1:0:0:0: [sda] 30464000 512-byte logical blocks: (15.6 GB/14.5 GiB)
+[ 3977.234966] sd 1:0:0:0: [sda] Write Protect is off
+[ 3977.240174] sd 1:0:0:0: [sda] Write cache: disabled, read cache: enabled, doesn't support DPO or FUA
+[ 3977.255074]  sda: sda1
+[ 3977.259567] sd 1:0:0:0: [sda] Attached SCSI removable disk
+[ 3991.098360] usb 2-1: USB disconnect, device number 2
+[ 3991.268280] FAT-fs (sda1): unable to read boot sector to mark fs as dirty
+------
+
+== TST023 Verify Audio codec driver is detected
+
+=== Precondition
+
+* AM572X-BEL-MMRFIC board
+* SD card with image
+
+=== Procedure
+
+* Check the audio codec driver are detected using below command
+
+------
+$ dmesg | grep "audio"
+------
+
+=== Expected result
+
+* Audio driver Initialization should be shown in dmesg log
+
+------
+root@am572x-bel-mmrfic:~# dmesg | grep "audio"
+[    9.004476] omap-hdmi-audio omap-hdmi-audio.0.auto: snd-soc-dummy-dai <-> 58040000.encoder mapping ok
+[    9.044884] omap-hdmi-audio omap-hdmi-audio.0.auto: ASoC: no DMI vendor name!
+[    9.401116] of_get_named_gpiod_flags: can't parse 'simple-audio-card,hp-det-gpio' property of node '/sound[0]'
+[    9.401134] of_get_named_gpiod_flags: can't parse 'simple-audio-card,mic-det-gpio' property of node '/sound[0]'
+------
+
+== TST024 Verify Audio ports are detected
+
+=== Precondition
+
+* AM572X-BEL-MMRFIC board
+* SD card with image
+
+=== Procedure
+
+* Check the list of audio port detected using below command
+
+------
+$ aplay -l
+------
+
+=== Expected result
+
+* List of audio ports should be detected
+
+------
+aplay -l
+**** List of PLAYBACK Hardware Devices ****
+card 0: PCH [HDA Intel PCH], device 0: ALC3204 Analog [ALC3204 Analog]
+  Subdevices: 0/1
+  Subdevice #0: subdevice #0
+card 0: PCH [HDA Intel PCH], device 3: HDMI 0 [HDMI 0]
+  Subdevices: 1/1
+  Subdevice #0: subdevice #0
+card 0: PCH [HDA Intel PCH], device 7: HDMI 1 [HDMI 1]
+  Subdevices: 1/1
+  Subdevice #0: subdevice #0
+card 0: PCH [HDA Intel PCH], device 8: HDMI 2 [HDMI 2]
+  Subdevices: 1/1
+  Subdevice #0: subdevice #0
+------
+
+== TST025 Verify whether Board enter into uboot prompt properly when press any key
+
+=== Precondition
+
+* AM572X-BEL-MMRFIC board
+* SD card with image
+
+=== Procedure
+
+* Power up the board
+* While booting the board, check the autoboot count is 5 seconds in boot log
+* Then press enter key go to u-boot prompt
+
+=== Expected result
+
+* Board should be entered into uboot prompt
+
+------
+U-Boot 2019.01-dirty (Jul 22 2022 - 13:25:15 +0000)
+
+CPU  : DRA752-GP ES2.0
+Model: MMRFIC phyCORE-AM572x Carrier Board
+Board: AM572X-BEL-MMRFIC
+DRAM:  2 GiB
+MMC:   OMAP SD/MMC: 0, OMAP SD/MMC: 1
+Loading Environment from FAT... *** Warning - bad CRC, using default environment
+
+Loading Environment from MMC... *** Warning - bad CRC, using default environment
+
+PHYTEC: unknown board name. Defaulting to am572x_bel_mmrfic, a MINIMAL AM5716 configuration.
+Warning: fastboot.board_rev: unknown board revision
+Net:
+Warning: ethernet@48484000 using MAC address from ROM
+eth0: ethernet@48484000
+Hit any key to stop autoboot:  0
+=>
+=>
+------
+
+== TST026 Check the board SOC in u-boot
+
+=== Precondition
+
+* AM572X-BEL-MMRFIC board
+* SD card with image
+
+=== Procedure
+
+* Check the board soc using below command
+
+------
+$ print board_soc
+------
+
+=== Expected result
+
+* Board SOC should be am572x
+
+------
+=> print board_soc
+board_soc=am572x
+------
+
+== TST027 Check the CPU model in u-boot
+
+=== Precondition
+
+* AM572X-BEL-MMRFIC board
+* SD card with image
+
+=== Procedure
+
+* Check the CPU model using below command
+
+------
+$ print cpu
+------
+
+=== Expected result
+
+* CPU model should be armv7
+
+== TST028 Check the board name in u-boot
+
+=== Precondition
+
+* AM572X-BEL-MMRFIC board
+* SD card with image
+
+=== Procedure
+
+* Check the board name using below command
+
+------
+$ print board_name
+------
+
+=== Expected result
+
+* Board name should be am572x_bel_mmrfic
+
+------
+=> print board_name
+board_name=am572x_bel_mmrfic
+------
+
+== TST029 Check the U-boot version
+
+=== Precondition
+
+* AM572X-BEL-MMRFIC board
+* SD card with image
+
+=== Procedure
+
+* Check the U-boot using below command
+
+------
+$ print ver
+------
+
+=== Expected result
+
+* U-boot version should be ver=U-Boot 2019.01-dirty
+
+------
+=> print ver
+ver=U-Boot 2019.01-dirty (Jul 22 2022 - 13:25:15 +0000)
+------
+
+== TST030 Verify whether kernel log is displayed using dmesg
+
+=== Precondition
+
+* AM572X-BEL-MMRFIC board
+* SD card with image
+
+=== Procedure
+
+* Check the kernel log is displayed in dmesg
+
+------
+$ dmesg
+------
+
+=== Expected result
+
+* Kernel log should be shown in dmesg command output
+
+== TST031 Verify whether Kernel data structure is accessible using sysfs
+
+=== Precondition
+
+* AM572X-BEL-MMRFIC board
+* SD card with image
+
+=== Procedure
+
+* check kernel data structure is accessible by getting current kernel log level from sysfs
+
+------
+$ cat /proc/sys/kernel/printk
+------
+
+=== Expected result
+
+* Kernel data should be accessible using sysfs
+
+------
+7       4       1       7
+------
+
+== TST032 Verify whether board shell is accessible
+
+=== Precondition
+
+* AM572X-BEL-MMRFIC board
+* SD card with image
+
+=== Procedure
+
+* Power up the board
+* After Board booted up, login the board
+* Run sh command and check whether shell is accessible
+
+--------
+$ sh
+
+
+root@am572x-bel-mmrfic:~# ls /bin/sh
+/bin/sh
+root@am572x-bel-mmrfic:~# echo $SHELL
+/bin/sh
+
+--------
+
+== TST033 Check whether Rootfs have basic commands for testing
+
+=== Precondition
+
+* AM572X-BEL-MMRFIC board
+* SD card with image
+
+=== Procedure
+
+* Power up and login the board
+* Run below commands and check whether commands are available in board
+
+------
+* dmesg
+* i2cdetect -V
+* aplay --version
+* spidev_test -v
+* ls /dev/ttyS*
+* dmesg | grep <name>
+------
+
+=== Expected result
+
+* All mentioned Basic commands should be available in board
+
+
+== TST034 Verify MMC_1 8 pins working as SD Card boot
+
+=== precondition
+
+* AM572X-BEL-MMRFIC board
+* SD card with image
+
+=== procedure
+
+* Insert image flashed SD card into card slot
+* Power up the board
+
+
+=== Expected Result
+
+* Board Should boot, and we should get the linux promptÂ 
+
+
+== TST035 Verify ETH_0 8 pins working as 10/100/1000M Ethernet(RGMII0)
+
+=== Precondition
+
+* AM572X-BEL-MMRFIC board
+* SD card with image
+
+=== Procedure
+
+* set the speed(10/100/1000M) and other properties using ethtool
+* connect the live ethernet cable to the connector
+* Check the configured parameters using ethtool
+
+=== Expected Result
+[source, sh]
+------
+root@am572x-bel-mmrfic:~# ethtool eth0
+Settings for eth0:
+        Supported ports: [ TP MII ]
+        Supported link modes:   10baseT/Half 10baseT/Full
+                                100baseT/Half 100baseT/Full
+                                1000baseT/Half 1000baseT/Full
+        Supported pause frame use: Symmetric Receive-only
+        Supports auto-negotiation: Yes
+        Supported FEC modes: Not reported
+        Advertised link modes:  100baseT/Full
+        Advertised pause frame use: No
+        Advertised auto-negotiation: Yes
+        Advertised FEC modes: Not reported
+        Link partner advertised link modes:  10baseT/Half 10baseT/Full
+                                             100baseT/Half 100baseT/Full
+        Link partner advertised pause frame use: No
+        Link partner advertised auto-negotiation: Yes
+        Link partner advertised FEC modes: Not reported
+        Speed: 100Mb/s
+        Duplex: Full
+        Port: MII
+        PHYAD: 1
+        Transceiver: internal
+        Auto-negotiation: on
+        Supports Wake-on: d
+        Wake-on: d
+        Current message level: 0x00000000 (0)
+
+        Link detected: yes
+
+
+root@am572x-bel-mmrfic:~# ethtool -s eth0 speed 1000 duplex full autoneg on
+root@am572x-bel-mmrfic:~# ethtool eth0
+Settings for eth0:
+        Supported ports: [ TP MII ]
+        Supported link modes:   10baseT/Half 10baseT/Full
+                                100baseT/Half 100baseT/Full
+                                1000baseT/Half 1000baseT/Full
+        Supported pause frame use: Symmetric Receive-only
+        Supports auto-negotiation: Yes
+        Supported FEC modes: Not reported
+        Advertised link modes:  1000baseT/Full
+        Advertised pause frame use: No
+        Advertised auto-negotiation: Yes
+        Advertised FEC modes: Not reported
+        Link partner advertised link modes:  10baseT/Half 10baseT/Full
+                                             100baseT/Half 100baseT/Full
+                                             1000baseT/Full
+        Link partner advertised pause frame use: No
+        Link partner advertised auto-negotiation: Yes
+        Link partner advertised FEC modes: Not reported
+        Speed: 1000Mb/s
+        Duplex: Full
+        Port: MII
+        PHYAD: 1
+        Transceiver: internal
+        Auto-negotiation: on
+        Supports Wake-on: d
+        Wake-on: d
+        Current message level: 0x00000000 (0)
+
+        Link detected: yes
+
+------
+
+
+
+
+== TST036 verify AMBE Codec 4 MHz clock on boot up
+
+=== preconditions
+
+* AM572X-BEL-MMRFIC board
+* SD card
+* Digital Oscilloscope
+
+=== procedure
+
+* Boot up the board.
+* check the resistor R51 with DSO Probe.
+
+=== Expected result
+
+* 4MHZ waveform on DSO.
+
+
+== TST037 verify the PHY MDIO.
+
+=== preconditions
+
+* AM572X-BEL-MMRFIC board
+* SD card
+* Ethernet Driver
+
+=== procedure
+
+* Boot into linux.
+* Connect ethernet cable.
+* Configure eth0 speed to 100Mbps/1000Mbps using `ethtool`
+  - `ethtool -s eth speed <100/1000> duplex full autoneg on`
+
+=== Expected result
+
+root@am572x-bel-mmrfic:/sys/class/leds# ethtool -s eth0 speed 100 duplex half autoneg on
+root@am572x-bel-mmrfic:/sys/class/leds# ethtool eth0
+Settings for eth0:
+        Supported ports: [ TP MII ]
+        Supported link modes:   10baseT/Half 10baseT/Full
+                                100baseT/Half 100baseT/Full
+                                1000baseT/Half 1000baseT/Full
+        Supported pause frame use: Symmetric Receive-only
+        Supports auto-negotiation: Yes
+        Supported FEC modes: Not reported
+        Advertised link modes:  100baseT/Half
+        Advertised pause frame use: No
+        Advertised auto-negotiation: Yes
+        Advertised FEC modes: Not reported
+        Link partner advertised link modes:  10baseT/Half 10baseT/Full
+                                             100baseT/Half 100baseT/Full
+        Link partner advertised pause frame use: No
+        Link partner advertised auto-negotiation: Yes
+        Link partner advertised FEC modes: Not reported
+        Speed: 100Mb/s
+        Duplex: Half
+        Port: MII
+        PHYAD: 1
+        Transceiver: internal
+        Auto-negotiation: on
+        Supports Wake-on: d
+        Wake-on: d
+        Current message level: 0x00000000 (0)
+
+        Link detected: yes
+
+== TST038 verify the TLV CODEC test.
+
+=== preconditions
+
+* AM572X-BEL-MMRFIC board
+* SD card
+
+=== procedure
+
+* Boot into linux.
+* Play the test file aplay.
+
+=== Expected result
+
+root@am572x-bel-mmrfic:/sys/class/leds# aplay /usr/share/sounds/alsa/Noise.wav
+Playing WAVE '/usr/share/sounds/alsa/Noise.wav' : Signed 16 bit Little Endian, Rate 48000 Hz, Mono
+
+
+== TST039 verify RP Message test.
+
+=== preconditions
+
+* AM572X-BEL-MMRFIC board
+* SD card
+* DSP Firmware
+
+=== procedure
+
+* Boot the board to Linux.
+* Load the firmware to DSP Engines and IPU Engines.
+* Execute the below commands.
+
+[source, sh]
+------
+# DSP 1
+
+$ ln -sf /home/root/dsp-binaries/rpmsg/server_dsp1.xe66 /lib/firmware/dra7-dsp1-fw.xe66
+$ echo 40800000.dsp > /sys/bus/platform/drivers/omap-rproc/unbind
+$ echo 40800000.dsp > /sys/bus/platform/drivers/omap-rproc/bind
+$ cd /root/dsp-binaries/rpmsg
+$ ./app_host DSP1
+
+# DSP 2
+
+$ ln -sf /home/root/dsp-binaries/rpmsg/server_dsp1.xe66 /lib/firmware/dra7-dsp2-fw.xe66
+$ echo 41000000.dsp > /sys/bus/platform/drivers/omap-rproc/unbind
+$ echo 41000000.dsp > /sys/bus/platform/drivers/omap-rproc/bind
+$ cd /root/dsp-binaries/rpmsg
+$ ./app_host DSP2
+
+# IPU 1
+
+$ ln -sf /home/root/dsp-binaries/rpmsg/server_ipu1.xem4 /lib/firmware/dra7-ipu1-fw.xem4
+$ echo 58820000.ipu > /sys/bus/platform/drivers/omap-rproc/unbind
+$ echo 58820000.ipu > /sys/bus/platform/drivers/omap-rproc/bin
+$ cd /root/dsp-binaries/rpmsg
+$./app_host IPU1
+
+# IPU 2
+
+$ ln -sf /home/root/dsp-binaries/rpmsg/server_ipu1.xem4 /lib/firmware/dra7-ipu2-fw.xem4
+$ echo 55020000.ipu > /sys/bus/platform/drivers/omap-rproc/unbind
+$ echo 55020000.ipu > /sys/bus/platform/drivers/omap-rproc/bin
+$ cd /root/dsp-binaries/rpmsg
+$./app_host IPU2
+------
+
+=== Expected result
+
+```
+root@am572x-bel-mmrfic:~/dsp-binaries/rpmsg# ./app_host DSP1
+--> main:
+--> Main_main:
+--> App_create:
+App_create: Host is ready
+<-- App_create:
+--> App_exec:
+App_exec: sending message 1
+App_exec: sending message 2
+App_exec: sending message 3
+App_exec: message received, sending message 4
+.
+.
+App_exec: message received, sending message 15
+App_exec: message received
+App_exec: message received
+App_exec: message received
+<-- App_exec: 0
+--> App_delete:
+<-- App_delete:
+<-- Main_main:
+<-- main:
+
+root@am572x-bel-mmrfic:~/dsp-binaries/rpmsg# ./app_host DSP2
+--> main:
+--> Main_main:
+--> App_create:
+App_create: Host is ready
+<-- App_create:
+--> App_exec:
+App_exec: sending message 1
+App_exec: sending message 2
+App_exec: sending message 3
+App_exec: message received, sending message 4
+.
+.
+App_exec: message received, sending message 15
+App_exec: message received
+App_exec: message received
+App_exec: message received
+<-- App_exec: 0
+--> App_delete:
+<-- App_delete:
+<-- Main_main:
+<-- main:
+
+
+root@am572x-bel-mmrfic:~/dsp-binaries/rpmsg# ./app_host IPU1
+--> main:
+--> Main_main:
+--> App_create:
+App_create: Host is ready
+<-- App_create:
+--> App_exec:
+App_exec: sending message 1
+App_exec: sending message 2
+App_exec: sending message 3
+App_exec: message received, sending message 4
+.
+.
+App_exec: message received, sending message 15
+App_exec: message received
+App_exec: message received
+App_exec: message received
+<-- App_exec: 0
+--> App_delete:
+<-- App_delete:
+<-- Main_main:
+<-- main:
+
+root@am572x-bel-mmrfic:~/dsp-binaries/rpmsg# ./app_host IPU2
+--> main:
+--> Main_main:
+--> App_create:
+App_create: Host is ready
+<-- App_create:
+--> App_exec:
+App_exec: sending message 1
+App_exec: sending message 2
+App_exec: sending message 3
+App_exec: message received, sending message 4
+.
+.
+App_exec: message received, sending message 15
+App_exec: message received
+App_exec: message received
+App_exec: message received
+<-- App_exec: 0
+--> App_delete:
+<-- App_delete:
+<-- Main_main:
+<-- main:
+
+```
+
+== TST040 verify IPC Big Data test.
+
+=== preconditions
+
+* AM572X-BEL-MMRFIC board
+* SD card
+* DSP binary
+
+=== procedure
+
+* Boot the board to Linux.
+* Load the firmware to DSP.
+* Execute the below commands.
+
+[source, sh]
+------
+# DSP 1
+$ ln -sf /home/root/dsp1-bigdata/server_dsp.xe66 /lib/firmware/dra7-dsp1-fw.xe66
+$ echo 40800000.dsp > /sys/bus/platform/drivers/omap-rproc/unbind
+$ echo 40800000.dsp > /sys/bus/platform/drivers/omap-rproc/bind
+$ cd /root/dsp1-bigdata
+$ ./app_host DSP1
+
+# DSP 2
+$ ln -sf /home/root/dsp1-bigdata/server_dsp.xe66 /lib/firmware/dra7-dsp2-fw.xe66
+$ echo 41000000.dsp > /sys/bus/platform/drivers/omap-rproc/unbind
+$ echo 41000000.dsp > /sys/bus/platform/drivers/omap-rproc/bind
+$ cd /root/dsp1-bigdata
+$ ./app_host DSP2
+
+------
+
+=== Expected Result
+
+[source, sh]
+------
+$ ./app_host DSP1
+--> main:
+--> Main_main:
+--> App_create:
+App_create: Host is ready
+<-- App_create:
+--> App_exec:
+CMEM_init success
+CMEM_allocPool success: Allocated buffer 0xaa50e000
+SharedRegion_setup success
+HeapMem_setup success
+.
+HeapMem_create success
+App_exec: sending message 1
+.
+App_exec: sending message 2
+App_exec: sending message 3
+.
+App_exec: message received: 16
+App_exec: Data check clean
+<-- App_exec: 0
+--> App_delete:
+<-- App_delete:
+<-- Main_main:
+Host: Test Passed
+<-- main:
+
+
+$ ./app_host DSP2
+--> main:
+--> Main_main:
+--> App_create:
+App_create: Host is ready
+<-- App_create:
+--> App_exec:
+CMEM_init success
+CMEM_allocPool success: Allocated buffer 0xaa50e000
+SharedRegion_setup success
+HeapMem_setup success
+.
+HeapMem_create success
+App_exec: sending message 1
+.
+App_exec: sending message 2
+App_exec: sending message 3
+.
+App_exec: message received: 16
+App_exec: Data check clean
+<-- App_exec: 0
+--> App_delete:
+<-- App_delete:
+<-- Main_main:
+Host: Test Passed
+<-- main:
+
+------
+
+== TST041 Verify u-boot log on UART-3/ttyS2.
+
+=== preconditions
+
+* AM572X-BEL-MMRFIC board
+* SD card
+
+=== procedure
+
+* Connect UART3 to Serial Terminal.
+* Power on the Board.
+* Press `Enter` Key on bootup.
+
+=== Expected result
+
+* U-Boot log should be shown as below.
+
+[source,sh]
+------
+U-Boot 2019.01-dirty (Jul 22 2022 - 13:25:15 +0000)
+
+CPU  : DRA752-GP ES2.0
+Model: MMRFIC phyCORE-AM572x Carrier Board
+Board: AM572X-BEL-MMRFIC
+DRAM:  2 GiB
+MMC:   OMAP SD/MMC: 0, OMAP SD/MMC: 1
+.
+.
+.
+.
+Hit any key to stop autoboot:  0
+=>
+=>
+------
+
+== TST042 verify Linux log on UART-3/ttyS2.
+
+=== preconditions
+
+* AM572X-BEL-MMRFIC board
+* SD card
+
+=== procedure
+
+* Connect UART4 to Serial Terminal/PC.
+* Power on the Board.
+
+=== Expected result
+
+* Linux boot log should be shown in Serial Terminal.
+
+
+== TST043 Verify Loopback test on UART-2/ttys1
+
+=== preconditions
+
+* AM572X-BEL-MMRFIC board
+* SD card
+* Loopback setup
+
+=== procedure
+
+1.Connect(Loopback) Carrier Board MB Connector PIN#133(RX) & PIN#134(TX)
+2.Run the test as below
+3.TX and RX data should be same
+
+=== Expected result
+
+root@am572x-bel-mmrfic:~# uart_test /dev/ttyS1
+Writting Data.....
+Device Reading .....
+ mmrfhello
+Loopback Test Success
+
+
+== TST044 Verify Loopback test on UART-4/ttys3
+
+=== preconditions
+
+* AM572X-BEL-MMRFIC board
+* SD card
+* Loopback setup
+
+=== procedure
+
+1.Connect(Loopback) Carrier Board MB Connector PIN#(RX) & PIN#(TX)
+2.Run the test as below
+3.TX and RX data should be same
+
+=== Expected result
+
+root@am572x-bel-mmrfic:~# uart_test /dev/ttyS3
+Writting Data.....
+Device Reading .....
+ mmrfhello
+Loopback Test Success
+
+
+== TST045 Verify AMBE CODEC reset pin toggling
+
+=== preconditions
+
+* AM572X-BEL-MMRFIC board
+* SD card
+* Digital Oscilloscope
+
+=== procedure
+
+* Export GIO6_13(MBC - 42)
+* Set direction to `out`.
+* set a number to `value` file.
+
+[source, sh]
+------
+$ cd /sys/class/gpio
+$ echo 173 > export
+$ cd gpio173
+$ echo out > direction
+$ echo 1 > value
+$ echo 0 > value
+------
+
+=== Expected result
+
+* MBC PIN#42 should toggle as per the value written.
+
+
+== TST046 Verify USB Webcam test
+
+=== preconditions
+
+* AM572X-BEL-MMRFIC board
+* SD card
+* Digital Oscilloscope
+
+=== procedure
+
+* Connect the USB webcam to the USB port.
+* We can record the stream using the following three methods
+  1.gstreamer pipeline
+  2.Python script
+  3.cpp code
+
+=== 1.Record Camera using GStreamer CLI
+
+The following gstreamer pipeline can be used to record camera data to a file.
+
+------
+target# gst-launch-1.0 v4l2src device=/dev/video1 name=cam_src ! videoconvert ! \
+               queue ! videoconvert ! avimux ! filesink location=output2.avi
+------
+
+=== 2.Record Camera using OpenCV in Python
+
+This example Python script saves the camera feed into a file.
+
+==== Step 1: Save the file
+
+Save the below Python code on the target's filesystem as *opencv_save.py*.
+
+------
+import cv2
+
+def save_feed_to_file(path, fps, codec):
+    # open camera
+    cam = cv2.VideoCapture(1)
+    width = cam.get(cv2.CAP_PROP_FRAME_WIDTH)  # float
+    # Get current height of frame
+    height = cam.get(cv2.CAP_PROP_FRAME_HEIGHT)  # float
+
+    # setup video writer object
+    codec = cv2.VideoWriter_fourcc(*codec)
+    out = cv2.VideoWriter(path, codec, fps, (int(width), int(height)))
+
+    while (cam.isOpened()):
+        # read a frame
+        ret, frame = cam.read()
+
+        # write frame using video writer
+        out.write(frame)
+
+def main():
+    save_feed_to_file("test.avi", 60, "MJPG")
+
+if __name__ == "__main__":
+    main()
+------
+
+==== Step 2: Run the script
+
+Use the below command to run the script.
+
+------
+target# python3 <path-to-file>/opencv_save.py
+------
+
+NOTE: To stop saving the feed press *ctrl+c*.
+
+=== 3.Record Camera using OpenCV in C++
+
+This cpp example code saves the camera feed as a file.
+
+==== Step 1: Save the file
+
+Save the below file on target's filesystem as *opencv_save.cpp*.
+
+------
+#include <opencv2/core.hpp>
+#include <opencv2/highgui.hpp>
+#include <opencv2/videoio.hpp>
+#include "opencv2/imgproc/imgproc.hpp"
+
+#include <iostream>
+
+using namespace std;
+using namespace cv;
+
+int main(int argc, char *argv[])
+{
+	Mat frame;
+        VideoCapture cap(1);
+
+	int width = cap.get(cv::CAP_PROP_FRAME_WIDTH);
+	int length = cap.get(cv::CAP_PROP_FRAME_HEIGHT);
+	int fps = cap.get(cv::CAP_PROP_FPS);
+	Size sizeFrame(width, length);
+
+	if (!cap.isOpened()) {
+	 	cerr << "Error in opening feed\n";
+	 	return -1;
+	}
+
+	//Video Codec, create video writer object
+	int codec = VideoWriter::fourcc('M', 'J', 'P', 'G');
+	VideoWriter writer("./feed_save.avi", codec, fps, sizeFrame);
+
+	if (!writer.isOpened()) {
+	 	cerr << "Error in opening writer\n";
+	 	return -1;
+	}
+
+	while (1) {
+
+		// read frame
+		if (!cap.read(frame)) {
+			cerr << "Error, blank frame\n";
+			return -1;
+		}
+
+		// write frame
+		writer.write(frame);
+	}
+	cap.release();
+	writer.release();
+	return 0;
+}
+------
+
+==== Step 2: Compile the source
+
+Use the below command to compile.
+
+------
+target# arm-linux-gnueabihf-g++ <path-to-file>/opencv_save.cpp \
+        -I/usr/include/opencv4 -L/usr/local/libc -lopencv_videoio \
+        -lopencv_imgproc -lopencv_highgui -lopencv_core -o opencv_save
+------
+
+==== Step 3: Run the executable
+
+Run the exacutable as shown below.
+
+------
+target# ./opencv_save
+------
+
+NOTE: To stop saving the feed press *ctrl+c*.
+
+=== Expected result
+
+* All three of the methods described above save the camera feed as a file into the webcam.
+
+
+== TST047 Verify SPI Loopback test.
+
+=== preconditions
+
+* AM572X-BEL-MMRFIC board
+* SD card
+* Loopback setup
+
+=== procedure
+
+1.Download and Build the spidev-test as below(https://github.com/rm-hull/spidev-test)
+
+	$ git clone https://github.com/rm-hull/spidev-test
+	$ cd spidev-test
+	$ gcc spidev_test.c -o spidev_test
+	$ ./spidev_test /dev/spidev{1.0/1.1}
+
+2.Connect(Loopback) Carrier Board MB Connector PIN#39(MOSI) & PIN#40(MISO)
+3.Run the test as below
+4.TX and RX data should be same
+
+=== Expected result
+
+[source, bash]
+------
+root@am572x-bel-mmrfic:~/spidev-test# pwd
+/home/root/spidev-test
+root@am572x-bel-mmrfic:~/spidev-test# ./spidev -v -D /dev/spidev1.0
+spi mode: 0x0
+bits per word: 8
+max speed: 500000 Hz (500 KHz)
+TX | FF FF FF FF FF FF 40 00 00 00 00 95 FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF F0 0D  | ......@....�..................�.
+RX | FF FF FF FF FF FF 40 00 00 00 00 95 FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF F0 0D  | ......@....�..................�.
+
+root@am572x-bel-mmrfic:~/spidev-test# ./spidev -v -D /dev/spidev1.1
+spi mode: 0x0
+bits per word: 8
+max speed: 500000 Hz (500 KHz)
+TX | FF FF FF FF FF FF 40 00 00 00 00 95 FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF F0 0D  | ......@....�..................�.
+RX | FF FF FF FF FF FF 40 00 00 00 00 95 FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF F0 0D  | ......@....�..................�.
+
+------
+
+== TST048 Verify eMMC Boot test.
+
+=== preconditions
+
+* AM572X-BEL-MMRFIC board
+* SD card
+* Loopback setup
+
+=== procedure
+
+* Copy tisdk-rootfs-image-am572x-bel-mmrfic.tar, u-boot.img and MLO to SDCARD.
+* Boot Linux from SDCARD.
+* Create partitions on eMMC as below.
+  - When prompted, enter the following sequence of characters one at a time. Do not enter the comments following the "#".
+
+```sh
+$ fdisk /dev/mmcblk1 # eMMC device
+command:: g             #GPT partition table
+command:: n             #new partition
+command:: 1             #partition number
+command:: 2048          #first sector
+command:: +2M           #last sector
+command:: n             #new partition
+command:: 2             #partition number
+command:: <enter>       #first sector
+command:: <enter>       #use default value
+command:: w             #write table to disk and exit
+
+```
+* format the partitions using `mkfs`
+
+```
+$ mkfs.vfat /dev/mmcblk1p1
+$ mkfs.ext4 -b 4096 /dev/mmcblk1p2
+```
+* Mount the eMMC partitions
+
+```
+$ mkdir -p  /mnt/uboot/
+$ mount /dev/mmcblk1p1 /mnt/uboot
+$ mkdir -p /mnt/rootfs
+$ mount /dev/mmcblk1p2 /mnt/rootfs
+```
+* Copy the rootfs and uboot contents from SD to eMMC.
+
+```
+$ cp /path/to/MLO /path/to/u-boot.img /mnt/uboot
+$ tar -xvf /path/to/tisdk-rootfs-image-am572x-bel-mmrfic.tar -C /mnt/rootfs
+$ touch /mnt/rootfs/eMMC
+```* Boot from eMMC.
+  - Power OFF the Board.
+  - Remove the SD Card.
+  - Power ON the Board.
+
+=== Expected result
+
+* Board should boot from eMMC without SD Card.
