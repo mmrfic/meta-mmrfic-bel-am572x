@@ -27,7 +27,7 @@ Index: kernel-source/arch/arm/boot/dts/am572x-bel-mmrfic.dts
 +                     "ti,dra74", "ti,dra7";
 +
 +	chosen {
-+		stdout-path = &uart4;
++		stdout-path = &uart3;
 +	};
 +
 +	rdk_audio: sound {
@@ -159,9 +159,9 @@ Index: kernel-source/arch/arm/boot/dts/am572x-bel-mmrfic.dts
 +        };
 +        uart8_pins_default:uart8_pins_default {
 +                pinctrl-single,pins = <
-+                DRA7XX_CORE_IOPAD(0x3734, PIN_OUTPUT | MUX_MODE3)   /* (C18) mcasp4_aclkx.uart8_rxd */
++                DRA7XX_CORE_IOPAD(0x3734, PIN_INPUT | MUX_MODE3)   /* (C18) mcasp4_aclkx.uart8_rxd */
 +                DRA7XX_CORE_IOPAD(0x3738, PIN_OUTPUT | MUX_MODE3)   /* (A21) mcasp4_fsx.uart8_txd */
-+                DRA7XX_CORE_IOPAD(0x373c, PIN_OUTPUT | MUX_MODE3)   /* (G16) mcasp4_axr0.uart8_ctsn */
++                DRA7XX_CORE_IOPAD(0x373c, PIN_INPUT | MUX_MODE3)   /* (G16) mcasp4_axr0.uart8_ctsn */
 +                DRA7XX_CORE_IOPAD(0x3740, PIN_OUTPUT | MUX_MODE3)   /* (D17) mcasp4_axr1.uart8_rtsn */
 +        >;
 +        };
@@ -250,16 +250,16 @@ Index: kernel-source/arch/arm/boot/dts/am572x-bel-mmrfic.dts
 +
 +	ambe_pins_default:ambe_pins_default{
 +                pinctrl-single,pins = <
-+                DRA7XX_CORE_IOPAD(0x36e8, PIN_INPUT | MUX_MODE14 )   /* (J7) mcasp1_axr13.gpio6_4 */
-+                DRA7XX_CORE_IOPAD(0x3718, PIN_INPUT | MUX_MODE14 )   /* (B16) mcasp2_axr5.gpio6_7 */
-+                DRA7XX_CORE_IOPAD(0x370c, PIN_INPUT | MUX_MODE14 )   /* (C15) mcasp2_axr2.gpio6_8 */
-+                DRA7XX_CORE_IOPAD(0x3710, PIN_INPUT | MUX_MODE14 )   /* (A16) mcasp2_axr3.gpio6_9 */
++                DRA7XX_CORE_IOPAD(0x36e8, PIN_OUTPUT | MUX_MODE14 )   /* (J7) mcasp1_axr13.gpio6_4 */
++                DRA7XX_CORE_IOPAD(0x3718, PIN_OUTPUT | MUX_MODE14 )   /* (B16) mcasp2_axr5.gpio6_7 */
++                DRA7XX_CORE_IOPAD(0x370c, PIN_OUTPUT | MUX_MODE14 )   /* (C15) mcasp2_axr2.gpio6_8 */
++                DRA7XX_CORE_IOPAD(0x3710, PIN_OUTPUT | MUX_MODE14 )   /* (A16) mcasp2_axr3.gpio6_9 */
 +                DRA7XX_CORE_IOPAD(0x3684, PIN_INPUT | MUX_MODE14 )   /* (AC10) usb2_drvvbus.gpio6_13 */
 +                DRA7XX_CORE_IOPAD(0x3688, PIN_INPUT | MUX_MODE14 )   /* (E21) gpio6_14.gpio6_14 */
 +                DRA7XX_CORE_IOPAD(0x368c, PIN_INPUT | MUX_MODE14 )   /* (F20) gpio6_15.gpio6_15 */
-+                DRA7XX_CORE_IOPAD(0x3580, PIN_INPUT | MUX_MODE14 )   /* (C1) vin2a_d6.gpio4_7 */
-+                DRA7XX_CORE_IOPAD(0x36e4, PIN_INPUT | MUX_MODE14 )   /* (E14) mcasp1_axr12.gpio4_18 */
-+                DRA7XX_CORE_IOPAD(0x35c8, PIN_INPUT | MUX_MODE14 )   /* (D11) vout1_clk.gpio4_19 */
++                DRA7XX_CORE_IOPAD(0x3580, PIN_OUTPUT | MUX_MODE14 )   /* (C1) vin2a_d6.gpio4_7 */
++                DRA7XX_CORE_IOPAD(0x36e4, PIN_OUTPUT | MUX_MODE14 )   /* (E14) mcasp1_axr12.gpio4_18 */
++                DRA7XX_CORE_IOPAD(0x35c8, PIN_OUTPUT | MUX_MODE14 )   /* (D11) vout1_clk.gpio4_19 */
 +                DRA7XX_CORE_IOPAD(0x35cc, PIN_INPUT | MUX_MODE14 )   /* (B10) vout1_de.gpio4_20 */
 +                DRA7XX_CORE_IOPAD(0x3514, PIN_INPUT | MUX_MODE14 )   /* (AG4) vin1a_d8.gpio3_12 */
 +                DRA7XX_CORE_IOPAD(0x345c, PIN_INPUT | MUX_MODE14 )   /* (P5) gpmc_a7.gpio1_29 */
@@ -267,7 +267,7 @@ Index: kernel-source/arch/arm/boot/dts/am572x-bel-mmrfic.dts
 +                DRA7XX_CORE_IOPAD(0x3780, PIN_INPUT | MUX_MODE14 )   /* (AC4) mmc3_cmd.gpio6_30 */
 +                DRA7XX_CORE_IOPAD(0x362c, PIN_INPUT | MUX_MODE14 )   /* (C9) vout1_d20.gpio8_20 */
 +                DRA7XX_CORE_IOPAD(0x3630, PIN_INPUT | MUX_MODE14 )   /* (A9) vout1_d21.gpio8_21 */
-+                DRA7XX_CORE_IOPAD(0x3454, PIN_INPUT | MUX_MODE14 )   /* (R9) gpmc_a5.gpio1_27 */
++                DRA7XX_CORE_IOPAD(0x3454, PIN_OUTPUT | MUX_MODE14 )   /* (R9) gpmc_a5.gpio1_27 */
 +                DRA7XX_CORE_IOPAD(0x3458, PIN_INPUT | MUX_MODE14 )   /* (R5) gpmc_a6.gpio1_28 */
 +       >;
 +	};
@@ -330,14 +330,14 @@ Index: kernel-source/arch/arm/boot/dts/am572x-bel-mmrfic.dts
 +&phytec_leds {
 +        pinctrl-0 = <&leds_som_pins_default &leds_cb_pins_default>;
 +
-+        led@4 {
++        led@2 {
 +                label = "am572x-bel-mmrfic-1";
 +                gpios = <&gpio1 4 GPIO_ACTIVE_HIGH>;
 +                linux,default-trigger = "gpio";
 +                default-state = "off";
 +        };
 +
-+        led@5 {
++        led@3 {
 +                label = "am572x-bel-mmrfic-2";
 +                gpios = <&gpio1 5 GPIO_ACTIVE_HIGH>;
 +                linux,default-trigger = "gpio";
