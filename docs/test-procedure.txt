@@ -67,7 +67,7 @@ PRETTY_NAME="Arago 2019.11"
 === Expected result
 
 ------
-U-Boot 2019.01-gdf704de-BSP-Yocto-TISDK-AM57xx-PD20.1.2-dirty (Jul 19 2022 - 09:20:58 +0000)
+U-Boot 2019.01-dirty (Jul 22 2022 - 13:25:15 +0000)
 ------
 
 == TST006 Check the Kernel version
@@ -1132,7 +1132,8 @@ Settings for eth0:
   - `ethtool -s eth speed <100/1000> duplex full autoneg on`
 
 === Expected result
-
+[source, sh]
+------
 root@am572x-bel-mmrfic:/sys/class/leds# ethtool -s eth0 speed 100 duplex half autoneg on
 root@am572x-bel-mmrfic:/sys/class/leds# ethtool eth0
 Settings for eth0:
@@ -1163,6 +1164,7 @@ Settings for eth0:
         Current message level: 0x00000000 (0)
 
         Link detected: yes
+------
 
 == TST038 verify the TLV CODEC test.
 
@@ -1177,10 +1179,11 @@ Settings for eth0:
 * Play the test file aplay.
 
 === Expected result
-
+[source, sh]
+------
 root@am572x-bel-mmrfic:/sys/class/leds# aplay /usr/share/sounds/alsa/Noise.wav
 Playing WAVE '/usr/share/sounds/alsa/Noise.wav' : Signed 16 bit Little Endian, Rate 48000 Hz, Mono
-
+------
 
 == TST039 verify RP Message test.
 
@@ -1233,7 +1236,8 @@ $./app_host IPU2
 
 === Expected result
 
-```
+[source, sh]
+------
 root@am572x-bel-mmrfic:~/dsp-binaries/rpmsg# ./app_host DSP1
 --> main:
 --> Main_main:
@@ -1326,8 +1330,7 @@ App_exec: message received
 <-- App_delete:
 <-- Main_main:
 <-- main:
-
-```
+------
 
 == TST040 verify IPC Big Data test.
 
@@ -1485,17 +1488,20 @@ Hit any key to stop autoboot:  0
 === procedure
 
 1.Connect(Loopback) Carrier Board MB Connector PIN#133(RX) & PIN#134(TX)
+
 2.Run the test as below
+
 3.TX and RX data should be same
 
 === Expected result
-
+[source, sh]
+------
 root@am572x-bel-mmrfic:~# uart_test /dev/ttyS1
 Writting Data.....
 Device Reading .....
  mmrfhello
 Loopback Test Success
-
+------
 
 == TST044 Verify Loopback test on UART-4/ttys3
 
@@ -1512,13 +1518,14 @@ Loopback Test Success
 3.TX and RX data should be same
 
 === Expected result
-
+[source, sh]
+------
 root@am572x-bel-mmrfic:~# uart_test /dev/ttyS3
 Writting Data.....
 Device Reading .....
  mmrfhello
 Loopback Test Success
-
+------
 
 == TST045 Verify AMBE CODEC reset pin toggling
 
@@ -1567,7 +1574,7 @@ $ echo 0 > value
 
 === 1.Record Camera using GStreamer CLI
 
-The following gstreamer pipeline can be used to record camera data to a file.
+* The following gstreamer pipeline can be used to record camera data to a file.
 
 ------
 target# gst-launch-1.0 v4l2src device=/dev/video1 name=cam_src ! videoconvert ! \
@@ -1576,11 +1583,11 @@ target# gst-launch-1.0 v4l2src device=/dev/video1 name=cam_src ! videoconvert ! 
 
 === 2.Record Camera using OpenCV in Python
 
-This example Python script saves the camera feed into a file.
+* This example Python script saves the camera feed into a file.
 
 ==== Step 1: Save the file
 
-Save the below Python code on the target's filesystem as *opencv_save.py*.
+* Save the below Python code on the target's filesystem as *opencv_save.py*.
 
 ------
 import cv2
@@ -1612,21 +1619,21 @@ if __name__ == "__main__":
 
 ==== Step 2: Run the script
 
-Use the below command to run the script.
+* Use the below command to run the script.
 
 ------
 target# python3 <path-to-file>/opencv_save.py
 ------
 
-NOTE: To stop saving the feed press *ctrl+c*.
+* NOTE: To stop saving the feed press *ctrl+c*.
 
 === 3.Record Camera using OpenCV in C++
 
-This cpp example code saves the camera feed as a file.
+* This cpp example code saves the camera feed as a file.
 
 ==== Step 1: Save the file
 
-Save the below file on target's filesystem as *opencv_save.cpp*.
+* Save the below file on target's filesystem as *opencv_save.cpp*.
 
 ------
 #include <opencv2/core.hpp>
@@ -1682,7 +1689,7 @@ int main(int argc, char *argv[])
 
 ==== Step 2: Compile the source
 
-Use the below command to compile.
+* Use the below command to compile.
 
 ------
 target# arm-linux-gnueabihf-g++ <path-to-file>/opencv_save.cpp \
@@ -1692,13 +1699,13 @@ target# arm-linux-gnueabihf-g++ <path-to-file>/opencv_save.cpp \
 
 ==== Step 3: Run the executable
 
-Run the exacutable as shown below.
+* Run the exacutable as shown below.
 
 ------
 target# ./opencv_save
 ------
 
-NOTE: To stop saving the feed press *ctrl+c*.
+* NOTE: To stop saving the feed press *ctrl+c*.
 
 === Expected result
 
@@ -1758,50 +1765,282 @@ RX | FF FF FF FF FF FF 40 00 00 00 00 95 FF FF FF FF FF FF FF FF FF FF FF FF FF 
 
 === procedure
 
-* Copy tisdk-rootfs-image-am572x-bel-mmrfic.tar, u-boot.img and MLO to SDCARD.
-* Boot Linux from SDCARD.
-* Create partitions on eMMC as below.
-  - When prompted, enter the following sequence of characters one at a time. Do not enter the comments following the "#".
+=== eMMC Flashing instructions
 
-```sh
-$ fdisk /dev/mmcblk1 # eMMC device
-command:: g             #GPT partition table
-command:: n             #new partition
-command:: 1             #partition number
-command:: 2048          #first sector
-command:: +2M           #last sector
-command:: n             #new partition
-command:: 2             #partition number
-command:: <enter>       #first sector
-command:: <enter>       #use default value
-command:: w             #write table to disk and exit
+=== Boot from SD card
 
-```
-* format the partitions using `mkfs`
+* Download `tisdk-rootfs-image-am572x-bel-mmrfic.tar` , `u-boot.img` and `MLO`
+* available in the release folder on workdrive.
 
-```
-$ mkfs.vfat /dev/mmcblk1p1
-$ mkfs.ext4 -b 4096 /dev/mmcblk1p2
-```
-* Mount the eMMC partitions
+* Create a bootable SD card and boot the board.
 
-```
-$ mkdir -p  /mnt/uboot/
-$ mount /dev/mmcblk1p1 /mnt/uboot
-$ mkdir -p /mnt/rootfs
-$ mount /dev/mmcblk1p2 /mnt/rootfs
-```
-* Copy the rootfs and uboot contents from SD to eMMC.
+* Copy the images downloaded from the release folder to the SD card's rootfs
 
-```
-$ cp /path/to/MLO /path/to/u-boot.img /mnt/uboot
-$ tar -xvf /path/to/tisdk-rootfs-image-am572x-bel-mmrfic.tar -C /mnt/rootfs
-$ touch /mnt/rootfs/eMMC
-```* Boot from eMMC.
-  - Power OFF the Board.
-  - Remove the SD Card.
-  - Power ON the Board.
+=== Create partitions on eMMC
+
+* Run the following command:
+
+------
+target# fdisk /dev/mmcblk1
+------
+
+* The above command displays the fdisk prompt.
+
+* Type the below commands in fdisk prompt to create the partition.
+* the explanation is mentioned in the comments following the command:
+
+------
+command:: o             # Create a DOS partition
+command:: n             # Add a new partition for boot
+command:: p 		# Make it as primary partition
+command:: 1             # Create partition number 1
+command:: 2048          # Allocate size of first sector
+command:: +2M           # Allocate size of last sector
+command:: t		# Change parition type
+Hex code (type L to list all codes): c # Select partition type as W95 FAT32 (LBA)
+command:: a     	# Turns on bootable flag on parition 1
+command:: n             # Add a new partition for rootfs
+command:: 2             # Create partition number 2
+command:: <enter>       # Allocate default size for first sector
+command:: <enter>       # Allocate default size for last sector
+command:: w             # Write table to disk and exit
+------
+
+* Create file system type using mkfs
+
+* Create VFAT file system type for Boot partition
+
+------
+target# mkfs.vfat /dev/mmcblk1p1
+------
+
+=== Create EXT4 file system type for rootfs
+
+------
+target# mkfs.ext4 -b 4096 /dev/mmcblk1p2
+------
+
+=== Mount the eMMC partitions
+
+-----
+target# mkdir -p  /mnt/uboot/
+target# mount /dev/mmcblk1p1 /mnt/uboot
+target# mkdir -p /mnt/rootfs
+target# mount /dev/mmcblk1p2 /mnt/rootfs
+-----
+
+=== Copy Rootfs and U-Boot to mount points
+
+-----
+target# cp </path/to/MLO> </path/to/u-boot.img> /mnt/uboot
+target# tar -xvf /path/to/tisdk-rootfs-image-am572x-bel-mmrfic.tar -C /mnt/rootfs
+-----
+
+=== Create a test file
+
+* The file eMMC is created in the root directory of rootfs.
+* This is to test whether the board has booted from eMMC and the flashing procedure was successful.
+
+-----
+target# touch /mnt/rootfs/eMMC
+-----
+
+=== Boot from eMMC
+
+* Follow the below step to boot from eMMC:
+
+1. Power OFF the board
+2. Unmount the SD card from board
+3. Power ON the board
+4. Check for the eMMC file in root directory of file system
+
 
 === Expected result
 
 * Board should boot from eMMC without SD Card.
+
+== TST049 Verify Loopback test on UART-n/ttyS(n-1)
+
+=== preconditions
+
+* AM572X-BEL-MMRFIC board
+* SD card
+* Loopback setup
+
+=== procedure
+
+1.Connect(Loopback) Carrier Board MB Connector UART-n/ttyS(n-1) PIN#(RX) & PIN#(TX)
+2.Run the test as below
+3.TX and RX data should be same
+
+=== Expected result
+
+[source, sh]
+------
+root@am572x-bel-mmrfic:~# uart_test /dev/ttyS(n-1)
+Writting Data.....
+Device Reading .....
+mmrfhello
+Loopback Test Success
+------
+
+== TST050 Verify GPIO(port_pin) toggling
+
+=== preconditions
+
+* AM572X-BEL-MMRFIC board
+* SD card
+* Digital Oscilloscope
+
+=== procedure
+
+* formula: N = (port-1)x32+pin
+* Export GIO(N)(MBC - X)
+* Set direction to out.
+* set a number to value file.
+
+[source, sh]
+------
+$ cd /sys/class/gpio
+$ echo N > export
+$ cd gpio(N)
+$ echo out > direction
+$ echo 1 > value
+$ echo 0 > value
+------
+
+=== Expected result
+
+[source, sh]
+------
+MBC PIN#X should toggle as per the value written.
+
+
+MBC PIN#X                GPIO(port_pin) N=(port-1)x32 + pin
+4 pin of MB connector	GPIO8_9        233
+5 pin of MB connector	GPIO2_24       56
+11 pin of MB connector	GPIO8_0        224
+12 pin of MB connector	GPIO8_1        225
+25 pin of MB connector	GPIO2_0        32
+26 pin of MB connector	GPIO2_1        33
+29 pin of MB connector	GPIO2_3        35
+30 pin of MB connector	GPIO2_4        36
+32 pin of MB connector	GPIO2_5        37
+33 pin of MB connector	GPIO2_6        38
+34 pin of MB connector	GPIO2_7        39
+35 pin of MB connector	GPIO2_8        40
+36 pin of MB connector	GPIO2_19       51
+37 pin of MB connector	GPIO2_20       52
+43 pin of MB connector	GPIO2_21       53
+44 pin of MB connector	GPIO2_23       55
+68 pin of MB connector	GPIO8_2        226
+69 pin of MB connector	GPIO8_3        227
+70 pin of MB connector	GPIO8_4        228
+71 pin of MB connector	GPIO8_5        229
+79 pin of MB connector	GPIO8_6        230
+95 pin of MB connector	GPIO8_7        231
+96 pin of MB connector	GPIO8_8        232
+105 pin of MB connector	GPIO2_28       60
+106 pin of MB connector	GPIO2_25       57
+107 pin of MB connector	GPIO2_29       61
+110 pin of MB connector	GPIO2_26       58
+127 pin of MB connector	GPIO2_27       59
+131 pin of MB connector	GPIO2_31       63
+------
+
+== TST051 Verify GPIO PIN toggling
+
+=== preconditions
+
+* AM572X-BEL-MMRFIC board
+* SD card
+* Digital Oscilloscope
+
+
+=== Procedure
+
+* Pins to toggle
+
+  - GPIO6_8(U18->5)
+  - GPIO6_9(U18->7)
+  - GPIO1_2(R75)
+  - GPIO3_31(JP3->7)
+
+* Formula to find GPIO number: `N = (port-1)x32+pin`
+* Run this script with GPIO number as argument.
+* Script: `sysfs.sh`
+
+[source, sh]
+------
+#! /bin/bash
+echo $1 > /sys/class/gpio/export
+cd /sys/class/gpio/gpio$1
+echo out > direction
+for i in {1..5}
+do
+        echo 1 > value
+        sleep 2
+        echo 0 > value
+        sleep 2
+done
+------
+
+=== Expected result
+
+* Script output:
+
+[source, sh]
+------
+root@am572x-bel-mmrfic:~# pwd
+/home/root
+root@am572x-bel-mmrfic:~# chmod +x sysfs.sh
+root@am572x-bel-mmrfic:~# ./sysfs.sh  168
+root@am572x-bel-mmrfic:~# ./sysfs.sh  168
+root@am572x-bel-mmrfic:~# echo 168 > /sys/class/gpio/unexport
+------
+
+* MBC PIN/Register should toggle as per the value written.
+
+== TST052 Verify AMBE GPIO PIN toggling
+
+=== preconditions
+
+* AM572X-BEL-MMRFIC board
+* eMMC / NFS
+* Digital Oscilloscope
+
+=== procedure
+
+* N = (port-1)x32+pin
+* Export GIO(N)
+* Set direction to `out`.
+* set a number to `value` file.
+
+[source, sh]
+------
+$ cd /sys/class/gpio
+$ echo N > export
+$ cd gpio(N)
+$ echo out > direction
+$ echo 1 > value
+$ echo 0 > value
+------
+
+=== Expected result
+
+* AMBE PIN should toggle as per the value written.
+
+------
+
+AM5728 PIN NAME - GPIO_ADDRESS    - Sysfs number - IC pin number
+
+A13 -BOOT0      - GPIO6_4         - 164          - 32
+
+B16 -BOOT1      - GPIO6_7         - 167          - 33
+
+AC10 -Reset     - GPIO6_13        - 173          - 42
+
+E14 -ENC        - GPIO4_18        - 114          - 44
+
+D11 -DEC        - GPIO4_19        - 115          - 45
+------
