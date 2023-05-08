@@ -67,8 +67,11 @@ PRETTY_NAME="Arago 2019.11"
 === Expected result
 
 ------
-U-Boot 2019.01-dirty (Jul 22 2022 - 13:25:15 +0000)
+U-Boot 2019.01-gdf704de-BSP-Yocto-TISDK-AM57xx-PD20.1.2-dirty (xxx)
+
 ------
+
+NOTE: `xxx` is the build date and time.
 
 == TST006 Check the Kernel version
 
@@ -711,34 +714,7 @@ root@am572x-bel-mmrfic:~# [ 3975.978165] usb 2-1: new SuperSpeed Gen 1 USB devic
 [ 3991.268280] FAT-fs (sda1): unable to read boot sector to mark fs as dirty
 ------
 
-== TST023 Verify Audio codec driver is detected
-
-=== Precondition
-
-* AM572X-BEL-MMRFIC board
-* SD card with image
-
-=== Procedure
-
-* Check the audio codec driver are detected using below command
-
-------
-$ dmesg | grep "audio"
-------
-
-=== Expected result
-
-* Audio driver Initialization should be shown in dmesg log
-
-------
-root@am572x-bel-mmrfic:~# dmesg | grep "audio"
-[    9.004476] omap-hdmi-audio omap-hdmi-audio.0.auto: snd-soc-dummy-dai <-> 58040000.encoder mapping ok
-[    9.044884] omap-hdmi-audio omap-hdmi-audio.0.auto: ASoC: no DMI vendor name!
-[    9.401116] of_get_named_gpiod_flags: can't parse 'simple-audio-card,hp-det-gpio' property of node '/sound[0]'
-[    9.401134] of_get_named_gpiod_flags: can't parse 'simple-audio-card,mic-det-gpio' property of node '/sound[0]'
-------
-
-== TST024 Verify Audio ports are detected
+== TST023 Verify Audio ports are detected
 
 === Precondition
 
@@ -760,21 +736,12 @@ $ aplay -l
 ------
 aplay -l
 **** List of PLAYBACK Hardware Devices ****
-card 0: PCH [HDA Intel PCH], device 0: ALC3204 Analog [ALC3204 Analog]
-  Subdevices: 0/1
-  Subdevice #0: subdevice #0
-card 0: PCH [HDA Intel PCH], device 3: HDMI 0 [HDMI 0]
-  Subdevices: 1/1
-  Subdevice #0: subdevice #0
-card 0: PCH [HDA Intel PCH], device 7: HDMI 1 [HDMI 1]
-  Subdevices: 1/1
-  Subdevice #0: subdevice #0
-card 0: PCH [HDA Intel PCH], device 8: HDMI 2 [HDMI 2]
+card 0: phyCOREAM57xxRD [phyCORE-AM57xx-RDK], device 0: davinci-mcasp.0-tlv32]
   Subdevices: 1/1
   Subdevice #0: subdevice #0
 ------
 
-== TST025 Verify whether Board enter into uboot prompt properly when press any key
+== TST024 Verify whether Board enter into uboot prompt properly when press any key
 
 === Precondition
 
@@ -792,7 +759,7 @@ card 0: PCH [HDA Intel PCH], device 8: HDMI 2 [HDMI 2]
 * Board should be entered into uboot prompt
 
 ------
-U-Boot 2019.01-dirty (Jul 22 2022 - 13:25:15 +0000)
+U-Boot 2019.01-gdf704de-BSP-Yocto-TISDK-AM57xx-PD20.1.2-dirty (xxx)
 
 CPU  : DRA752-GP ES2.0
 Model: MMRFIC phyCORE-AM572x Carrier Board
@@ -811,9 +778,12 @@ eth0: ethernet@48484000
 Hit any key to stop autoboot:  0
 =>
 =>
+
 ------
 
-== TST026 Check the board SOC in u-boot
+NOTE: `xxx` is the build date and time.
+
+== TST025 Check the board SOC in u-boot
 
 === Precondition
 
@@ -837,7 +807,7 @@ $ print board_soc
 board_soc=am572x
 ------
 
-== TST027 Check the CPU model in u-boot
+== TST026 Check the CPU model in u-boot
 
 === Precondition
 
@@ -856,7 +826,7 @@ $ print cpu
 
 * CPU model should be armv7
 
-== TST028 Check the board name in u-boot
+== TST027 Check the board name in u-boot
 
 === Precondition
 
@@ -880,7 +850,7 @@ $ print board_name
 board_name=am572x_bel_mmrfic
 ------
 
-== TST029 Check the U-boot version
+== TST028 Check the U-boot version
 
 === Precondition
 
@@ -889,22 +859,23 @@ board_name=am572x_bel_mmrfic
 
 === Procedure
 
-* Check the U-boot using below command
+* After power on the board hit any key to stop at U-boot prompt and then check the U-boot using below command
 
 ------
-$ print ver
+=> print ver
 ------
 
 === Expected result
 
-* U-boot version should be ver=U-Boot 2019.01-dirty
-
 ------
 => print ver
-ver=U-Boot 2019.01-dirty (Jul 22 2022 - 13:25:15 +0000)
+ver=U-Boot 2019.01-gdf704de-BSP-Yocto-TISDK-AM57xx-PD20.1.2-dirty (xxx)
+
 ------
 
-== TST030 Verify whether kernel log is displayed using dmesg
+NOTE: `xxx` is the build date and time.
+
+== TST029 Verify whether kernel log is displayed using dmesg
 
 === Precondition
 
@@ -923,7 +894,7 @@ $ dmesg
 
 * Kernel log should be shown in dmesg command output
 
-== TST031 Verify whether Kernel data structure is accessible using sysfs
+== TST030 Verify whether Kernel data structure is accessible using sysfs
 
 === Precondition
 
@@ -946,7 +917,7 @@ $ cat /proc/sys/kernel/printk
 7       4       1       7
 ------
 
-== TST032 Verify whether board shell is accessible
+== TST031 Verify whether board shell is accessible
 
 === Precondition
 
@@ -970,7 +941,7 @@ root@am572x-bel-mmrfic:~# echo $SHELL
 
 --------
 
-== TST033 Check whether Rootfs have basic commands for testing
+== TST032 Check whether Rootfs have basic commands for testing
 
 === Precondition
 
@@ -996,7 +967,7 @@ root@am572x-bel-mmrfic:~# echo $SHELL
 * All mentioned Basic commands should be available in board
 
 
-== TST034 Verify MMC_1 8 pins working as SD Card boot
+== TST033 Verify MMC_1 8 pins working as SD Card boot
 
 === precondition
 
@@ -1014,7 +985,7 @@ root@am572x-bel-mmrfic:~# echo $SHELL
 * Board Should boot, and we should get the linux promptÂ 
 
 
-== TST035 Verify ETH_0 8 pins working as 10/100/1000M Ethernet(RGMII0)
+== TST034 Verify ETH_0 8 pins working as 10/100/1000M Ethernet(RGMII0)
 
 === Precondition
 
@@ -1098,7 +1069,7 @@ Settings for eth0:
 
 
 
-== TST036 verify AMBE Codec 4 MHz clock on boot up
+== TST035 verify AMBE Codec 4 MHz clock on boot up
 
 === preconditions
 
@@ -1116,7 +1087,7 @@ Settings for eth0:
 * 4MHZ waveform on DSO.
 
 
-== TST037 verify the PHY MDIO.
+== TST036 verify the PHY MDIO.
 
 === preconditions
 
@@ -1166,7 +1137,7 @@ Settings for eth0:
         Link detected: yes
 ------
 
-== TST038 verify the TLV CODEC test.
+== TST037 verify the TLV CODEC test.
 
 === preconditions
 
@@ -1185,7 +1156,7 @@ root@am572x-bel-mmrfic:/sys/class/leds# aplay /usr/share/sounds/alsa/Noise.wav
 Playing WAVE '/usr/share/sounds/alsa/Noise.wav' : Signed 16 bit Little Endian, Rate 48000 Hz, Mono
 ------
 
-== TST039 verify RP Message test.
+== TST038 verify RP Message test.
 
 === preconditions
 
@@ -1332,7 +1303,7 @@ App_exec: message received
 <-- main:
 ------
 
-== TST040 verify IPC Big Data test.
+== TST039 verify IPC Big Data test.
 
 === preconditions
 
@@ -1425,7 +1396,7 @@ Host: Test Passed
 
 ------
 
-== TST041 Verify u-boot log on UART-3/ttyS2.
+== TST040 Verify u-boot log on UART-3/ttyS2.
 
 === preconditions
 
@@ -1444,7 +1415,7 @@ Host: Test Passed
 
 [source,sh]
 ------
-U-Boot 2019.01-dirty (Jul 22 2022 - 13:25:15 +0000)
+U-Boot 2019.01-gdf704de-BSP-Yocto-TISDK-AM57xx-PD20.1.2-dirty (xxx)
 
 CPU  : DRA752-GP ES2.0
 Model: MMRFIC phyCORE-AM572x Carrier Board
@@ -1458,9 +1429,12 @@ MMC:   OMAP SD/MMC: 0, OMAP SD/MMC: 1
 Hit any key to stop autoboot:  0
 =>
 =>
+
 ------
 
-== TST042 verify Linux log on UART-3/ttyS2.
+NOTE: `xxx` is the build date and time.
+
+== TST041 verify Linux log on UART-3/ttyS2.
 
 === preconditions
 
@@ -1477,7 +1451,7 @@ Hit any key to stop autoboot:  0
 * Linux boot log should be shown in Serial Terminal.
 
 
-== TST043 Verify Loopback test on UART-2/ttys1
+== TST042 Verify Loopback test on UART-2/ttys1
 
 === preconditions
 
@@ -1503,7 +1477,7 @@ Device Reading .....
 Loopback Test Success
 ------
 
-== TST044 Verify Loopback test on UART-4/ttys3
+== TST043 Verify Loopback test on UART-4/ttys3
 
 === preconditions
 
@@ -1527,7 +1501,7 @@ Device Reading .....
 Loopback Test Success
 ------
 
-== TST045 Verify AMBE CODEC reset pin toggling
+== TST044 Verify AMBE CODEC reset pin toggling
 
 === preconditions
 
@@ -1556,7 +1530,7 @@ $ echo 0 > value
 * MBC PIN#42 should toggle as per the value written.
 
 
-== TST046 Verify USB Webcam test
+== TST045 Verify USB Webcam test
 
 === preconditions
 
@@ -1712,7 +1686,7 @@ target# ./opencv_save
 * All three of the methods described above save the camera feed as a file into the webcam.
 
 
-== TST047 Verify SPI Loopback test.
+== TST046 Verify SPI Loopback test.
 
 === preconditions
 
@@ -1755,7 +1729,7 @@ RX | FF FF FF FF FF FF 40 00 00 00 00 95 FF FF FF FF FF FF FF FF FF FF FF FF FF 
 
 ------
 
-== TST048 Verify eMMC Boot test.
+== TST047 Verify eMMC Boot test.
 
 === preconditions
 
@@ -1859,7 +1833,7 @@ target# touch /mnt/rootfs/eMMC
 
 * Board should boot from eMMC without SD Card.
 
-== TST049 Verify Loopback test on UART-n/ttyS(n-1)
+== TST048 Verify Loopback test on UART-n/ttyS(n-1)
 
 === preconditions
 
@@ -1884,7 +1858,7 @@ mmrfhello
 Loopback Test Success
 ------
 
-== TST050 Verify GPIO(port_pin) toggling
+== TST049 Verify GPIO(port_pin) toggling
 
 === preconditions
 
@@ -1948,7 +1922,7 @@ MBC PIN#X                GPIO(port_pin) N=(port-1)x32 + pin
 131 pin of MB connector	GPIO2_31       63
 ------
 
-== TST051 Verify GPIO PIN toggling
+== TST050 Verify GPIO PIN toggling
 
 === preconditions
 
@@ -2001,7 +1975,7 @@ root@am572x-bel-mmrfic:~# echo 168 > /sys/class/gpio/unexport
 
 * MBC PIN/Register should toggle as per the value written.
 
-== TST052 Verify AMBE GPIO PIN toggling
+== TST051 Verify AMBE GPIO PIN toggling
 
 === preconditions
 
